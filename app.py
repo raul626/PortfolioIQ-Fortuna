@@ -28,7 +28,7 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".")
 CORS(app)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
