@@ -6,6 +6,7 @@ Features:
   - Auto Screener: analyst upgrades + undervalued growth stocks
   - Weekly email report to rinjoque@me.com
   - SSL fix built-in for all environments
+  - Valuation tab: P/E expansion signals + 52-week range bars + research links
 """
 
 # ── SSL fix — must be before any network imports ──────────────────────────────
@@ -485,6 +486,135 @@ def setup_scheduler():
     if not scheduler.running:
         scheduler.start()
 
+# ═══════════════════════════════════════════════════════════════════════════════
+#  VALUATION MODULE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+MACROTRENDS_SLUGS = {
+    "QQQM":  "invesco-qqq-trust",
+    "VDE":   "vanguard-energy-etf",
+    "ICLN":  "ishares-global-clean-energy",
+    "VEU":   "vanguard-ftse-all-world-ex-us",
+    "NU":    "nu-holdings",
+    "SMH":   "vaneck-semiconductor-etf",
+    "XAR":   "spdr-aerospace-defense-etf",
+    "CIBR":  "first-trust-nasdaq-cybersecurity",
+    "BE":    "bloom-energy",
+    "SOXX":  "ishares-semiconductor-etf",
+    "FTXL":  "first-trust-nasdaq-semiconductor",
+    "SHLD":  "global-x-defense-tech-etf",
+    "IONQ":  "ionq",
+    "IBM":   "international-business-machines",
+    "FLNC":  "fluence-energy",
+    "RGTI":  "rigetti-computing",
+    "QUBT":  "quantum-computing",
+    "VST":   "vistra-energy",
+    "VUG":   "vanguard-growth-etf",
+}
+
+def get_macrotrends_url(ticker: str) -> str:
+    slug = MACROTRENDS_SLUGS.get(ticker.upper(), ticker.lower())
+    return f"https://www.macrotrends.net/stocks/charts/{ticker.upper()}/{slug}/pe-ratio"
+
+def get_valuation_signal(ticker: str) -> dict:
+    """
+    Pull P/E, EPS, and 52-week price data via yfinance.
+    Returns a dict ready for the valuation tab in index.html.
+    """
+    try:
+        t    = yf.Ticker(ticker)
+        info = t.info
+
+        trailing_pe  = info.get("trailingPE")
+        forward_pe   = info.get("forwardPE")
+        forward_eps  = info.get("forwardEps")
+        price        = info.get("currentPrice") or info.get("regularMarketPrice")
+        high_52w     = info.get("fiftyTwoWeekHigh")
+        low_52w      = info.get("fiftyTwoWeekLow")
+        target_price = info.get("targetMeanPrice")
+
+        # 52-week position (0 = at low, 100 = at high)
+        pct_from_high  = None
+        range_position = None
+        near_high      = False
+
+        if price and high_52w:
+            pct_from_high = round((price / high_52w - 1) * 100, 1)
+            near_high     = pct_from_high >= -5
+        if price and high_52w and low_52w and high_52w != low_52w:
+            range_position = round(
+                max(0, min(100, (price - low_52w) / (high_52w - low_52w) * 100)), 1
+            )
+
+        # P/E expansion logic
+        pe_expanding = None
+        signal = signal_color = "N/A"
+        explanation = ""
+
+        if trailing_pe and forward_pe:
+            pe_expanding = forward_pe > (trailing_pe * 1.05)
+            if not pe_expanding and trailing_pe < 40:
+                signal = "healthy"
+                explanation = "Earnings growing faster than price — high here is justified."
+            elif pe_expanding and near_high:
+                signal = "stretched"
+                explanation = "Near 52-week high AND P/E expanding — investors paying more for same earnings. Consider trimming."
+            elif trailing_pe > 60:
+                signal = "danger"
+                explanation = f"P/E of {round(trailing_pe,1)}x is extremely stretched. Check 10-year history on Macrotrends."
+            elif pe_expanding and not near_high:
+                signal = "watch"
+                explanation = "P/E expanding but not yet near 52-week high. Monitor before adding."
+            else:
+                signal = "healthy"
+                explanation = "Valuation reasonable relative to earnings trajectory."
+        elif trailing_pe:
+            signal = "watch"
+            explanation = "Forward P/E unavailable — partial analysis only. Check Yahoo Stats."
+        else:
+            signal = "na"
+            explanation = "P/E not applicable (ETF, pre-revenue, or data unavailable). Use range bar and analyst target for context."
+
+        # Analyst upside
+        upside_pct = None
+        if target_price and price:
+            upside_pct = round((target_price / price - 1) * 100, 1)
+
+        return {
+            "ticker":          ticker.upper(),
+            "price":           round(price, 2) if price else None,
+            "trailing_pe":     round(trailing_pe, 1) if trailing_pe else None,
+            "forward_pe":      round(forward_pe, 1)  if forward_pe  else None,
+            "forward_eps":     round(forward_eps, 2) if forward_eps else None,
+            "high_52w":        round(high_52w, 2) if high_52w else None,
+            "low_52w":         round(low_52w, 2)  if low_52w  else None,
+            "pct_from_high":   pct_from_high,
+            "range_position":  range_position,
+            "near_high":       near_high,
+            "pe_expanding":    pe_expanding,
+            "target_price":    round(target_price, 2) if target_price else None,
+            "upside_pct":      upside_pct,
+            "signal":          signal,
+            "explanation":     explanation,
+            "macrotrends_url": get_macrotrends_url(ticker),
+            "yahoo_stats":     f"https://finance.yahoo.com/quote/{ticker.upper()}/key-statistics/",
+            "simplywall":      f"https://simplywall.st/stocks/us/{ticker.lower()}/news",
+        }
+    except Exception as e:
+        return {
+            "ticker":          ticker.upper(),
+            "signal":          "na",
+            "explanation":     f"Error: {str(e)}",
+            "macrotrends_url": get_macrotrends_url(ticker),
+            "yahoo_stats":     f"https://finance.yahoo.com/quote/{ticker.upper()}/key-statistics/",
+            "simplywall":      f"https://simplywall.st/stocks/us/{ticker.lower()}/news",
+            "price": None, "trailing_pe": None, "forward_pe": None,
+            "forward_eps": None, "high_52w": None, "low_52w": None,
+            "pct_from_high": None, "range_position": None,
+            "near_high": False, "pe_expanding": None,
+            "target_price": None, "upside_pct": None,
+        }
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
@@ -518,6 +648,14 @@ def analyze():
         if "error" not in d:
             d.update(score_ticker(d, cfg["weights"]))
         results.append(d)
+    return jsonify(results)
+
+@app.route("/api/valuation", methods=["GET"])
+def valuation_api():
+    """Return valuation signals for all portfolio + watchlist tickers."""
+    data    = load_portfolio()
+    tickers = list(dict.fromkeys(data.get("portfolio", []) + data.get("watchlist", [])))
+    results = [get_valuation_signal(t) for t in tickers]
     return jsonify(results)
 
 @app.route("/api/debug/<symbol>")

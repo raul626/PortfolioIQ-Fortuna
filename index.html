@@ -15,6 +15,9 @@
     --gold:   #f4a261; --green:  #52b788; --red:    #e63946; --gray:   #8d99ae;
     --light:  #edf2f4; --card:   #16253a; --border: rgba(255,255,255,0.07);
     --safe-top: env(safe-area-inset-top,0px); --safe-bot: env(safe-area-inset-bottom,0px);
+    /* Valuation palette */
+    --v-green: #00C896; --v-amber: #FF9F1C; --v-red: #FF4D6D; --v-gold: #C9A84C;
+    --v-card:  #152840; --v-teal: #00D4FF;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
@@ -163,6 +166,86 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;text-align:center;padding:0 20px;line-height:1.8}
 
+  /* ── VALUATION TAB STYLES ─────────────────────────────────────────────── */
+  .val-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:11px;color:var(--gray)}
+  .val-legend span{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+
+  .val-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+
+  .val-card{background:var(--v-card);border:1px solid rgba(0,212,255,0.08);border-radius:14px;
+            padding:16px 18px 14px;position:relative;overflow:hidden;
+            transition:border-color .2s,transform .15s}
+  .val-card:hover{border-color:rgba(0,212,255,0.22);transform:translateY(-2px)}
+  .val-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+  .vc-healthy::before{background:var(--v-green)}
+  .vc-watch::before{background:var(--v-gold)}
+  .vc-stretched::before{background:var(--v-amber)}
+  .vc-danger::before{background:var(--v-red)}
+  .vc-na::before{background:var(--gray)}
+
+  .val-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .val-ticker-sym{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:#fff;letter-spacing:.05em}
+  .val-ticker-price{font-size:11px;color:var(--gray);margin-top:2px}
+
+  .val-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+  .vb-healthy{background:rgba(0,200,150,.15);color:var(--v-green)}
+  .vb-watch{background:rgba(201,168,76,.15);color:var(--v-gold)}
+  .vb-stretched{background:rgba(255,159,28,.15);color:var(--v-amber)}
+  .vb-danger{background:rgba(255,77,109,.15);color:var(--v-red)}
+  .vb-na{background:rgba(107,124,147,.15);color:var(--gray)}
+
+  .val-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .val-metric{background:rgba(0,0,0,.2);border-radius:8px;padding:8px;text-align:center}
+  .val-metric .vm-lbl{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .val-metric .vm-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--light)}
+  .vm-val.vg{color:var(--v-green)}.vm-val.va{color:var(--v-amber)}.vm-val.vr{color:var(--v-red)}
+
+  .val-pe-row{display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 8px;
+              border-radius:6px;background:rgba(0,0,0,.15);margin-bottom:12px}
+
+  /* 52-week range bar */
+  .val-range-section{margin-bottom:12px}
+  .val-range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--gray);margin-bottom:5px}
+  .val-range-labels .vrl-title{font-weight:600;color:var(--light)}
+  .val-range-labels .vrl-pct{font-weight:700}
+  .vrl-pct.near-high{color:var(--v-amber)}
+  .vrl-pct.mid-range{color:var(--v-green)}
+  .vrl-pct.near-low{color:var(--v-red)}
+
+  .val-range-track{position:relative;height:8px;border-radius:4px;
+                   background:rgba(255,255,255,.07);margin-bottom:3px}
+  .val-range-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px}
+  .vrf-low{background:linear-gradient(90deg,#FF4D6D,#FF7B2F)}
+  .vrf-mid{background:linear-gradient(90deg,#00C896,#00D4FF)}
+  .vrf-high{background:linear-gradient(90deg,#00D4FF,#C9A84C)}
+  .val-range-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);
+                   width:13px;height:13px;border-radius:50%;
+                   border:2px solid var(--v-card);
+                   box-shadow:0 0 6px rgba(0,212,255,.5);z-index:2}
+  .val-range-ends{display:flex;justify-content:space-between;font-size:9px;color:var(--gray)}
+
+  .val-target{display:inline-flex;align-items:center;gap:5px;
+              font-size:11px;margin-bottom:10px}
+  .val-target .vt-lbl{color:var(--gray)}
+  .val-target .vt-val{font-weight:700;padding:2px 8px;border-radius:4px}
+  .vt-up{background:rgba(0,200,150,.1);color:var(--v-green)}
+  .vt-dn{background:rgba(255,77,109,.1);color:var(--v-red)}
+
+  .val-explain{font-size:11px;color:var(--gray);font-style:italic;
+               margin-bottom:10px;line-height:1.4}
+
+  .val-links{display:flex;gap:7px;flex-wrap:wrap;padding-top:9px;
+             border-top:1px solid rgba(255,255,255,.05)}
+  .val-link{font-size:11px;color:var(--v-teal);text-decoration:none;
+            padding:4px 9px;border-radius:4px;
+            background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.12);
+            transition:background .15s;white-space:nowrap}
+  .val-link:hover{background:rgba(0,212,255,.18);color:#fff}
+  .val-link-warn{color:var(--v-amber);background:rgba(255,159,28,.07);
+                 border-color:rgba(255,159,28,.2)}
+  .val-link-warn:hover{background:rgba(255,159,28,.18)}
+
   /* MISC */
   .empty{text-align:center;padding:40px 20px;color:var(--gray)}
   .empty .emoji{font-size:40px;display:block;margin-bottom:12px}
@@ -266,6 +349,28 @@
     </div>
   </div>
 
+  <!-- ═══ VALUATION ═══ -->
+  <div class="page" id="page-valuation">
+    <div class="page-header">
+      <h1>⚖️ Valuation</h1>
+      <p>Earnings-driven highs vs. multiple-expansion highs — know the difference</p>
+    </div>
+
+    <!-- Legend -->
+    <div class="val-legend">
+      <span><span class="legend-dot" style="background:var(--v-green)"></span>Healthy — earnings growing faster than price</span>
+      <span><span class="legend-dot" style="background:var(--v-gold)"></span>Watch — monitor P/E trend</span>
+      <span><span class="legend-dot" style="background:var(--v-amber)"></span>Stretched — P/E expanding near high</span>
+      <span><span class="legend-dot" style="background:var(--v-red)"></span>Danger — extreme valuation</span>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="loadValuation()">⚖️ Run Valuation Analysis</button>
+
+    <div id="valuationResults">
+      <div class="empty"><span class="emoji">⚖️</span><p>Tap <b>Run Valuation Analysis</b> above.<br>Analyzes all your portfolio &amp; watchlist tickers.</p></div>
+    </div>
+  </div>
+
   <!-- ═══ MANAGE ═══ -->
   <div class="page" id="page-manage">
     <div class="page-header">
@@ -357,10 +462,12 @@
 
 </main>
 
+<!-- BOTTOM TABS — 6 tabs now including Valuation -->
 <div class="bottom-tabs">
   <button class="tab-btn active" onclick="showPage('dashboard',this)"><span class="tab-icon">📊</span>Dashboard</button>
   <button class="tab-btn" onclick="showPage('screener',this)"><span class="tab-icon">🔭</span>Screener</button>
   <button class="tab-btn" onclick="showPage('compare',this)"><span class="tab-icon">⚡</span>Compare</button>
+  <button class="tab-btn" onclick="showPage('valuation',this)"><span class="tab-icon">⚖️</span>Valuation</button>
   <button class="tab-btn" onclick="showPage('manage',this)"><span class="tab-icon">📋</span>Manage</button>
   <button class="tab-btn" onclick="showPage('settings',this)"><span class="tab-icon">⚙</span>Settings</button>
 </div>
@@ -474,17 +581,12 @@ async function runScreener(){
   showLoading('Scanning ~80 stocks for analyst upgrades\nand undervalued growth opportunities…\n\nThis takes about 60 seconds.');
   try{
     await postJ('/api/screener/refresh',{});
-    // Poll until results arrive
     let attempts=0;
     const poll=async()=>{
       const data=await fetchJ('/api/screener');
-      if(data.results&&data.results.length>0){
-        renderScreener(data);hideLoading();
-      } else if(attempts<20){
-        attempts++;setTimeout(poll,4000);
-      } else {
-        hideLoading();alert('Screener took too long. Try again.');
-      }
+      if(data.results&&data.results.length>0){renderScreener(data);hideLoading();}
+      else if(attempts<20){attempts++;setTimeout(poll,4000);}
+      else{hideLoading();alert('Screener took too long. Try again.');}
     };
     setTimeout(poll,8000);
   }catch(e){hideLoading();alert('Screener error: '+e)}
@@ -493,21 +595,15 @@ async function runScreener(){
 function renderScreener(data){
   const lastRun=data.last_run?new Date(data.last_run).toLocaleString():'Unknown';
   document.getElementById('screenerLastRun').textContent='Last run: '+lastRun+' · '+data.results.length+' candidates found';
-
   if(!data.results.length){
-    document.getElementById('screenerResults').innerHTML=emptyHTML('🔍','No candidates matched the criteria this week.');
-    return;
+    document.getElementById('screenerResults').innerHTML=emptyHTML('🔍','No candidates matched the criteria this week.');return;
   }
-
   document.getElementById('screenerResults').innerHTML=data.results.map(s=>{
     const upside=s.upside_pct;
-    const revGr= s.revenue_growth!=null?(s.revenue_growth*100).toFixed(1)+'%':'—';
+    const revGr=s.revenue_growth!=null?(s.revenue_growth*100).toFixed(1)+'%':'—';
     return `<div class="screener-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div class="stock-sym">${s.symbol}</div>
-          <div class="stock-name">${s.name} · ${s.sector}</div>
-        </div>
+        <div><div class="stock-sym">${s.symbol}</div><div class="stock-name">${s.name} · ${s.sector}</div></div>
         <div style="text-align:right">
           <div class="stock-price">$${fmt(s.price)}</div>
           ${upside!=null?`<div class="upside-pct">▲ ${upside}% upside</div>`:''}
@@ -560,40 +656,34 @@ async function runComparison(){
         ${momentumSignals(md)}
       </div>`;
     }).join('');
-
     const metrics=[
-      ['P/E Ratio',      d=>d.pe_ratio,      true,  v=>fmt(v)],
-      ['P/B Ratio',      d=>d.pb_ratio,      true,  v=>fmt(v)],
-      ['Revenue Growth', d=>d.revenue_growth, false, v=>fmtPct(v)],
-      ['EPS Growth',     d=>d.eps_growth,     false, v=>fmtPct(v)],
-      ['Profit Margin',  d=>d.profit_margin,  false, v=>fmtPct(v)],
-      ['ROE',            d=>d.roe,            false, v=>fmtPct(v)],
-      ['52W Perf',       d=>d.perf_52w,       false, v=>v!=null?v.toFixed(1)+'%':'—'],
-      ['RSI',            d=>d.rsi,            false, v=>fmt(v)],
-      ['MA Position',    d=>d.momentum_detail?.ma_signal, false, v=>v||'N/A'],
-      ['MACD',           d=>d.momentum_detail?.macd_signal, false, v=>v||'N/A'],
-      ['vs S&P 500',     d=>d.momentum_detail?.rs_vs_spy, false, v=>v!=null?v.toFixed(1)+'%':'—'],
-      ['Volume Ratio',   d=>d.momentum_detail?.volume_ratio, false, v=>v!=null?v.toFixed(2)+'x':'—'],
-      ['Dividend Yield', d=>d.dividend_yield, false, v=>fmtPct(v)],
-      ['Beta',           d=>d.beta,           true,  v=>fmt(v)],
-      ['Debt/Equity',    d=>d.debt_equity,    true,  v=>fmt(v)],
-      ['Analyst Target', d=>d.analyst_target, false, v=>v?'$'+fmt(v):'—'],
+      ['P/E Ratio',d=>d.pe_ratio,true,v=>fmt(v)],
+      ['P/B Ratio',d=>d.pb_ratio,true,v=>fmt(v)],
+      ['Revenue Growth',d=>d.revenue_growth,false,v=>fmtPct(v)],
+      ['EPS Growth',d=>d.eps_growth,false,v=>fmtPct(v)],
+      ['Profit Margin',d=>d.profit_margin,false,v=>fmtPct(v)],
+      ['ROE',d=>d.roe,false,v=>fmtPct(v)],
+      ['52W Perf',d=>d.perf_52w,false,v=>v!=null?v.toFixed(1)+'%':'—'],
+      ['RSI',d=>d.rsi,false,v=>fmt(v)],
+      ['MA Position',d=>d.momentum_detail?.ma_signal,false,v=>v||'N/A'],
+      ['MACD',d=>d.momentum_detail?.macd_signal,false,v=>v||'N/A'],
+      ['vs S&P 500',d=>d.momentum_detail?.rs_vs_spy,false,v=>v!=null?v.toFixed(1)+'%':'—'],
+      ['Volume Ratio',d=>d.momentum_detail?.volume_ratio,false,v=>v!=null?v.toFixed(2)+'x':'—'],
+      ['Dividend Yield',d=>d.dividend_yield,false,v=>fmtPct(v)],
+      ['Beta',d=>d.beta,true,v=>fmt(v)],
+      ['Debt/Equity',d=>d.debt_equity,true,v=>fmt(v)],
+      ['Analyst Target',d=>d.analyst_target,false,v=>v?'$'+fmt(v):'—'],
     ];
-
     const mrows=metrics.map(([lbl,getter,lowerBetter,fmtFn])=>{
       const vA=getter(dA),vB=getter(dB);
       let cA='neu',cB='neu';
-      if(typeof vA==='number'&&typeof vB==='number'){
-        const aWins=lowerBetter?vA<vB:vA>vB;
-        cA=aWins?'pos':'neg';cB=aWins?'neg':'pos';
-      }
+      if(typeof vA==='number'&&typeof vB==='number'){const aWins=lowerBetter?vA<vB:vA>vB;cA=aWins?'pos':'neg';cB=aWins?'neg':'pos';}
       return `<tr>
         <td style="padding:9px 0;color:var(--gray);font-size:12px;border-bottom:1px solid var(--border)">${lbl}</td>
         <td style="padding:9px 0;text-align:center;font-family:'DM Mono',monospace;font-size:12px;border-bottom:1px solid var(--border)" class="${cA}">${fmtFn(vA)}</td>
         <td style="padding:9px 0;text-align:center;font-family:'DM Mono',monospace;font-size:12px;border-bottom:1px solid var(--border)" class="${cB}">${fmtFn(vB)}</td>
       </tr>`;
     }).join('');
-
     document.getElementById('compareCards').innerHTML=cards;
     document.getElementById('compareMetrics').innerHTML=`
       <div class="card-title">📊 Full Metric Breakdown</div>
@@ -607,6 +697,127 @@ async function runComparison(){
       </table>`;
     document.getElementById('compareResult').style.display='block';
   }finally{hideLoading()}
+}
+
+// ── Valuation ─────────────────────────────────────────────────────────────────
+async function loadValuation(){
+  showLoading('Fetching P/E and valuation data…\n\nAnalyzing your portfolio & watchlist.');
+  try{
+    const results = await fetchJ('/api/valuation');
+    if(!results||!results.length){
+      document.getElementById('valuationResults').innerHTML=
+        emptyHTML('⚖️','No tickers found. Add tickers in Manage first.');
+      return;
+    }
+    document.getElementById('valuationResults').innerHTML=
+      '<div class="val-grid">'+results.map(valCard).join('')+'</div>';
+  }catch(e){
+    document.getElementById('valuationResults').innerHTML=
+      emptyHTML('⚠️','Error loading valuation data: '+e);
+  }finally{hideLoading()}
+}
+
+function valCard(r){
+  const sig   = r.signal || 'na';
+  const badge = {healthy:'✅ Healthy',watch:'🟡 Watch',stretched:'⚠️ Stretched',danger:'🔴 Danger',na:'— N/A'}[sig]||'—';
+  const vc    = 'vc-'+sig;
+  const vb    = 'vb-'+sig;
+
+  // P/E metric colors
+  const fwdCls = r.trailing_pe && r.forward_pe
+    ? (r.forward_pe < r.trailing_pe ? 'vg' : r.forward_pe > r.trailing_pe*1.1 ? 'vr' : '')
+    : '';
+
+  // 52-week range bar
+  const pos  = r.range_position ?? 50;
+  const zone = pos > 85 ? 'vrf-high' : pos < 20 ? 'vrf-low' : 'vrf-mid';
+  const thumbColor = pos > 85 ? '#C9A84C' : pos < 20 ? '#FF4D6D' : '#00D4FF';
+  const pctLabel = r.pct_from_high != null
+    ? (r.pct_from_high >= -3 ? `▲ Near all-time high (${r.pct_from_high}%)`
+      : r.pct_from_high <= -40 ? `▼ Near 52-week low (${r.pct_from_high}%)`
+      : `${r.pct_from_high}% from 52w high`)
+    : '—';
+  const pctCls = r.pct_from_high != null
+    ? (r.pct_from_high >= -5 ? 'near-high' : r.pct_from_high <= -35 ? 'near-low' : 'mid-range')
+    : '';
+
+  // PE expansion label
+  let peRow = '';
+  if(r.pe_expanding === true)
+    peRow = `<span style="color:var(--v-amber)">↗</span> <span style="color:var(--v-amber)"><b>P/E Expanding</b> — investors paying more for same earnings</span>`;
+  else if(r.pe_expanding === false)
+    peRow = `<span style="color:var(--v-green)">↘</span> <span style="color:var(--v-green)"><b>P/E Contracting</b> — earnings growing faster than price</span>`;
+  else
+    peRow = `<span style="color:var(--gray)">— P/E data unavailable</span>`;
+
+  // Analyst target
+  let targetHtml = '';
+  if(r.target_price && r.price){
+    const up = r.upside_pct;
+    const cls = up >= 0 ? 'vt-up' : 'vt-dn';
+    targetHtml = `<div class="val-target">
+      <span class="vt-lbl">Analyst target:</span>
+      <span class="vt-val ${cls}">$${r.target_price} (${up>=0?'+':''}${up}%)</span>
+    </div>`;
+  }
+
+  // Warn link
+  const warnLink = (sig==='stretched'||sig==='danger')
+    ? `<a class="val-link val-link-warn" href="${r.macrotrends_url}" target="_blank">⚠️ Check 10yr P/E →</a>`
+    : '';
+
+  return `<div class="val-card ${vc}">
+    <div class="val-top">
+      <div>
+        <div class="val-ticker-sym">${r.ticker}</div>
+        <div class="val-ticker-price">${r.price ? '$'+r.price.toFixed(2) : '—'}</div>
+      </div>
+      <div class="val-badge ${vb}">${badge}</div>
+    </div>
+
+    <div class="val-metrics">
+      <div class="val-metric">
+        <div class="vm-lbl">Trailing P/E</div>
+        <div class="vm-val">${r.trailing_pe != null ? r.trailing_pe+'x' : '—'}</div>
+      </div>
+      <div class="val-metric">
+        <div class="vm-lbl">Forward P/E</div>
+        <div class="vm-val ${fwdCls}">${r.forward_pe != null ? r.forward_pe+'x' : '—'}</div>
+      </div>
+      <div class="val-metric">
+        <div class="vm-lbl">Fwd EPS</div>
+        <div class="vm-val">${r.forward_eps != null ? '$'+r.forward_eps : '—'}</div>
+      </div>
+    </div>
+
+    <div class="val-pe-row">${peRow}</div>
+
+    <div class="val-range-section">
+      <div class="val-range-labels">
+        <span class="vrl-title">52-Week Range</span>
+        <span class="vrl-pct ${pctCls}">${pctLabel}</span>
+      </div>
+      <div class="val-range-track">
+        <div class="val-range-fill ${zone}" style="width:${pos}%"></div>
+        <div class="val-range-thumb" style="left:${pos}%;background:${thumbColor}"></div>
+      </div>
+      <div class="val-range-ends">
+        <span>${r.low_52w ? '$'+r.low_52w : '52w Low'}</span>
+        <span>${r.high_52w ? '$'+r.high_52w : '52w High'}</span>
+      </div>
+    </div>
+
+    ${targetHtml}
+
+    <div class="val-explain">${r.explanation||''}</div>
+
+    <div class="val-links">
+      <a class="val-link" href="${r.macrotrends_url}" target="_blank">📈 P/E History</a>
+      <a class="val-link" href="${r.yahoo_stats}" target="_blank">📊 Yahoo Stats</a>
+      <a class="val-link" href="${r.simplywall}" target="_blank">🧱 Simply Wall St</a>
+      ${warnLink}
+    </div>
+  </div>`;
 }
 
 // ── Manage ────────────────────────────────────────────────────────────────────
@@ -681,10 +892,10 @@ function updateWTotal(){
 async function saveSettings(){
   const pass=document.getElementById('cfgSmtpPass').value;
   const body={
-    email:       document.getElementById('cfgEmail').value,
-    smtp_server: document.getElementById('cfgSmtpServer').value,
-    smtp_port:   parseInt(document.getElementById('cfgSmtpPort').value),
-    smtp_user:   document.getElementById('cfgSmtpUser').value,
+    email:document.getElementById('cfgEmail').value,
+    smtp_server:document.getElementById('cfgSmtpServer').value,
+    smtp_port:parseInt(document.getElementById('cfgSmtpPort').value),
+    smtp_user:document.getElementById('cfgSmtpUser').value,
     schedule_day:document.getElementById('cfgDay').value,
     schedule_hour:parseInt(document.getElementById('cfgHour').value),
   };
@@ -700,10 +911,8 @@ async function saveWeights(){
 }
 async function testEmail(){
   showLoading('Generating and sending test report…\nCheck rinjoque@me.com shortly.');
-  try{
-    const r=await postJ('/api/send_report',{});
-    hideLoading();showAlert('settingsAlert','success','✓ Report sent! Check your inbox (may take a few minutes).');
-  }catch(e){hideLoading();showAlert('settingsAlert','error','Error: '+e)}
+  try{await postJ('/api/send_report',{});hideLoading();showAlert('settingsAlert','success','✓ Report sent! Check your inbox.');}
+  catch(e){hideLoading();showAlert('settingsAlert','error','Error: '+e)}
 }
 async function triggerReport(){
   showLoading('Generating and sending weekly report…');
