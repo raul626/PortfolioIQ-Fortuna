@@ -529,15 +529,19 @@ function momentumSignals(md){
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 async function refreshDashboard(){
-  const saved=await fetchJ('/api/portfolio');
-  if(!saved.portfolio.length&&!saved.watchlist.length){alert('No tickers yet. Go to Manage to add them.');return}
+  // Use in-memory tickers (already loaded from localStorage on startup)
+  const portfolio = portfolioTickers;
+  const watchlist = watchlistTickers;
+  if(!portfolio.length && !watchlist.length){
+    alert('No tickers yet. Go to Manage to add them.');return;
+  }
   showLoading('Fetching live data from Yahoo Finance…\n\nThis takes 20–40 seconds.\nPlease wait.');
   try{
-    const all=    [...saved.portfolio,...saved.watchlist];
-    const results=await postJ('/api/analyze',{symbols:all});
-    const portD=  results.filter(r=>saved.portfolio.includes(r.symbol));
-    const watchD= results.filter(r=>saved.watchlist.includes(r.symbol));
-    const avgScore=portD.length?Math.round(portD.reduce((s,d)=>s+(d.scores?.composite??50),0)/portD.length):'—';
+    const all     = [...portfolio,...watchlist];
+    const results = await postJ('/api/analyze',{symbols:all});
+    const portD   = results.filter(r=>portfolio.includes(r.symbol));
+    const watchD  = results.filter(r=>watchlist.includes(r.symbol));
+    const avgScore= portD.length?Math.round(portD.reduce((s,d)=>s+(d.scores?.composite??50),0)/portD.length):'—';
     document.getElementById('statPort').textContent=portD.length;
     document.getElementById('statAvg').textContent=avgScore;
     document.getElementById('statWatch').textContent=watchD.length;
@@ -701,12 +705,18 @@ async function runComparison(){
 
 // ── Valuation ─────────────────────────────────────────────────────────────────
 async function loadValuation(){
+  const all = [...portfolioTickers,...watchlistTickers];
+  if(!all.length){
+    document.getElementById('valuationResults').innerHTML=
+      emptyHTML('⚖️','No tickers found. Add tickers in Manage first.');
+    return;
+  }
   showLoading('Fetching P/E and valuation data…\n\nAnalyzing your portfolio & watchlist.');
   try{
     const results = await fetchJ('/api/valuation');
     if(!results||!results.length){
       document.getElementById('valuationResults').innerHTML=
-        emptyHTML('⚖️','No tickers found. Add tickers in Manage first.');
+        emptyHTML('⚖️','No data returned. Try again in a moment.');
       return;
     }
     document.getElementById('valuationResults').innerHTML=
@@ -822,10 +832,31 @@ function valCard(r){
 
 // ── Manage ────────────────────────────────────────────────────────────────────
 async function loadTickers(){
-  const data=await fetchJ('/api/portfolio');
-  portfolioTickers=data.portfolio||[];watchlistTickers=data.watchlist||[];
-  renderChips('portfolioArea','portfolioInput',portfolioTickers,'portfolio');
-  renderChips('watchlistArea','watchlistInput',watchlistTickers,'watchlist');
+  // 1. Try localStorage first (survives server restarts)
+  const local = localStorage.getItem('piq_tickers');
+  if(local){
+    try{
+      const d = JSON.parse(local);
+      portfolioTickers = d.portfolio || [];
+      watchlistTickers = d.watchlist || [];
+      renderChips('portfolioArea','portfolioInput',portfolioTickers,'portfolio');
+      renderChips('watchlistArea','watchlistInput',watchlistTickers,'watchlist');
+      // Sync to server silently in background
+      postJ('/api/portfolio',{portfolio:portfolioTickers,watchlist:watchlistTickers}).catch(()=>{});
+      return;
+    }catch(e){}
+  }
+  // 2. Fall back to server if no local data yet
+  try{
+    const data = await fetchJ('/api/portfolio');
+    portfolioTickers = data.portfolio || [];
+    watchlistTickers = data.watchlist || [];
+    localStorage.setItem('piq_tickers', JSON.stringify({portfolio:portfolioTickers,watchlist:watchlistTickers}));
+    renderChips('portfolioArea','portfolioInput',portfolioTickers,'portfolio');
+    renderChips('watchlistArea','watchlistInput',watchlistTickers,'watchlist');
+  }catch(e){
+    portfolioTickers=[]; watchlistTickers=[];
+  }
 }
 function renderChips(areaId,inputId,tickers,type){
   const area=document.getElementById(areaId),input=document.getElementById(inputId);
@@ -858,8 +889,15 @@ function handleTickerKey(e,type){
 }
 function focusInput(id){document.getElementById(id).focus()}
 async function saveTickers(){
-  await postJ('/api/portfolio',{portfolio:portfolioTickers,watchlist:watchlistTickers});
-  showAlert('manageAlert','success','✓ Saved successfully!');
+  // Save to localStorage first (instant, survives server restarts)
+  localStorage.setItem('piq_tickers', JSON.stringify({portfolio:portfolioTickers,watchlist:watchlistTickers}));
+  // Also sync to server for email reports
+  try{
+    await postJ('/api/portfolio',{portfolio:portfolioTickers,watchlist:watchlistTickers});
+    showAlert('manageAlert','success','✓ Saved successfully!');
+  }catch(e){
+    showAlert('manageAlert','success','✓ Saved locally! (Server sync pending)');
+  }
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
@@ -928,7 +966,12 @@ function showAlert(id,type,msg){
   setTimeout(()=>el.classList.remove('show'),5000);
 }
 
-document.addEventListener('DOMContentLoaded',loadTickers);
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await loadTickers();
+  // Show ticker counts immediately from localStorage without waiting for API
+  document.getElementById('statPort').textContent  = portfolioTickers.length || '—';
+  document.getElementById('statWatch').textContent = watchlistTickers.length || '—';
+});
 </script>
 </body>
 </html>
