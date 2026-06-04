@@ -246,6 +246,39 @@
                  border-color:rgba(255,159,28,.2)}
   .val-link-warn:hover{background:rgba(255,159,28,.18)}
 
+  /* ROIC / WACC — Ackman section */
+  .val-roic-section{margin-bottom:12px;border-radius:10px;overflow:hidden;
+                    border:1px solid rgba(255,255,255,.06)}
+  .val-roic-header{display:flex;align-items:center;justify-content:space-between;
+                   padding:7px 10px;font-size:10px;font-weight:700;
+                   text-transform:uppercase;letter-spacing:.07em}
+  .roic-header-strong {background:rgba(0,200,150,.15); color:var(--v-green)}
+  .roic-header-positive{background:rgba(0,212,255,.10); color:var(--v-teal)}
+  .roic-header-marginal{background:rgba(201,168,76,.12); color:var(--v-gold)}
+  .roic-header-negative{background:rgba(255,159,28,.12); color:var(--v-amber)}
+  .roic-header-danger  {background:rgba(255,77,109,.12);  color:var(--v-red)}
+  .roic-header-etf     {background:rgba(107,124,147,.10); color:var(--gray)}
+  .roic-header-na      {background:rgba(107,124,147,.10); color:var(--gray)}
+
+  .val-roic-metrics{display:grid;grid-template-columns:repeat(3,1fr);
+                    gap:0;background:rgba(0,0,0,.15)}
+  .roic-metric{text-align:center;padding:8px 6px;
+               border-right:1px solid rgba(255,255,255,.05)}
+  .roic-metric:last-child{border-right:none}
+  .roic-metric .rm-lbl{font-size:9px;color:var(--gray);
+                        text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .roic-metric .rm-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:700}
+  .rm-val.roic-strong  {color:var(--v-green)}
+  .rm-val.roic-positive{color:var(--v-teal)}
+  .rm-val.roic-marginal{color:var(--v-gold)}
+  .rm-val.roic-negative{color:var(--v-amber)}
+  .rm-val.roic-danger  {color:var(--v-red)}
+  .rm-val.roic-neutral {color:var(--gray)}
+
+  .val-roic-verdict{padding:7px 10px;font-size:11px;color:var(--gray);
+                    font-style:italic;line-height:1.4;
+                    background:rgba(0,0,0,.1);border-top:1px solid rgba(255,255,255,.04)}
+
   /* MISC */
   .empty{text-align:center;padding:40px 20px;color:var(--gray)}
   .empty .emoji{font-size:40px;display:block;margin-bottom:12px}
@@ -776,6 +809,48 @@ function valCard(r){
     ? `<a class="val-link val-link-warn" href="${r.macrotrends_url}" target="_blank">⚠️ Check 10yr P/E →</a>`
     : '';
 
+  // ROIC / WACC — Ackman section
+  const roicSig  = r.roic_signal || 'na';
+  const roicHeader = {
+    strong:   '✅ Creating Strong Value',
+    positive: '✅ Creating Value',
+    marginal: '🟡 Marginal Value Creation',
+    negative: '⚠️ Destroying Value',
+    danger:   '🔴 Significant Value Destruction',
+    etf:      '— ETF: N/A',
+    na:       '— Data Unavailable',
+  }[roicSig] || '—';
+
+  const spreadColor = roicSig === 'strong' || roicSig === 'positive'
+    ? `roic-${roicSig}` : roicSig === 'marginal' ? 'roic-marginal'
+    : roicSig === 'negative' ? 'roic-negative'
+    : roicSig === 'danger'   ? 'roic-danger' : 'roic-neutral';
+
+  const roicSection = `
+    <div class="val-roic-section">
+      <div class="val-roic-header roic-header-${roicSig}">
+        <span>⚖️ Ackman Test — ROIC vs WACC</span>
+        <span>${roicHeader}</span>
+      </div>
+      <div class="val-roic-metrics">
+        <div class="roic-metric">
+          <div class="rm-lbl">ROIC</div>
+          <div class="rm-val ${spreadColor}">${r.roic != null ? r.roic+'%' : '—'}</div>
+        </div>
+        <div class="roic-metric">
+          <div class="rm-lbl">WACC</div>
+          <div class="rm-val roic-neutral">${r.wacc != null ? r.wacc+'%' : '—'}</div>
+        </div>
+        <div class="roic-metric">
+          <div class="rm-lbl">Spread</div>
+          <div class="rm-val ${spreadColor}">
+            ${r.spread != null ? (r.spread >= 0 ? '+' : '')+r.spread+'%' : '—'}
+          </div>
+        </div>
+      </div>
+      <div class="val-roic-verdict">${r.roic_verdict || ''}</div>
+    </div>`;
+
   return `<div class="val-card ${vc}">
     <div class="val-top">
       <div>
@@ -820,6 +895,8 @@ function valCard(r){
     ${targetHtml}
 
     <div class="val-explain">${r.explanation||''}</div>
+
+    ${roicSection}
 
     <div class="val-links">
       <a class="val-link" href="${r.macrotrends_url}" target="_blank">📈 P/E History</a>

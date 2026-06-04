@@ -516,9 +516,105 @@ def get_macrotrends_url(ticker: str) -> str:
     slug = MACROTRENDS_SLUGS.get(ticker.upper(), ticker.lower())
     return f"https://www.macrotrends.net/stocks/charts/{ticker.upper()}/{slug}/pe-ratio"
 
+def calc_roic_wacc(info: dict) -> dict:
+    """
+    Calculate ROIC and WACC from yfinance info fields.
+    Returns dict with roic, wacc, spread, roic_signal, roic_verdict.
+    Returns all None for ETFs or when data is insufficient.
+    """
+    quote_type = str(info.get("quoteType","")).upper()
+    is_etf     = quote_type in ("ETF","MUTUALFUND","FUND","INDEX")
+
+    if is_etf:
+        return {
+            "roic": None, "wacc": None, "spread": None,
+            "roic_signal": "etf",
+            "roic_verdict": "ROIC/WACC not applicable for ETFs — individual holdings vary."
+        }
+
+    try:
+        # ── ROIC ─────────────────────────────────────────────────────────────
+        # ROIC = NOPAT / Invested Capital
+        # Approximation: Net Income / (Total Equity + Total Debt)
+        net_income   = info.get("netIncomeToCommon")
+        total_debt   = info.get("totalDebt") or 0
+        total_equity = info.get("totalStockholderEquity") or info.get("bookValue")
+
+        roic = None
+        if net_income and total_equity:
+            invested_capital = total_equity + total_debt
+            if invested_capital > 0:
+                roic = round((net_income / invested_capital) * 100, 1)
+
+        # ── WACC ─────────────────────────────────────────────────────────────
+        # Simplified: Risk-free rate + Beta × Equity Risk Premium
+        # Using 10yr Treasury ~4.3%, ERP ~5.5%
+        RISK_FREE    = 4.3   # 10-yr US Treasury June 2026
+        ERP          = 5.5   # Equity risk premium
+        beta         = info.get("beta") or info.get("beta3Year") or 1.0
+        beta         = max(0.3, min(float(beta), 3.0))  # cap between 0.3–3.0
+
+        cost_of_equity = RISK_FREE + beta * ERP
+
+        # Debt adjustment (after-tax cost of debt)
+        TAX_RATE = 0.21
+        total_assets = info.get("totalAssets") or 1
+        if total_debt and total_equity and (total_debt + total_equity) > 0:
+            total_cap      = total_debt + total_equity
+            weight_debt    = total_debt   / total_cap
+            weight_equity  = total_equity / total_cap
+            # Estimate cost of debt from interest expense / total debt
+            interest_exp   = abs(info.get("interestExpense") or 0)
+            cost_of_debt   = (interest_exp / total_debt * 100) if total_debt > 0 else 5.0
+            cost_of_debt   = max(3.0, min(cost_of_debt, 12.0))  # cap 3–12%
+            wacc = round(
+                weight_equity * cost_of_equity +
+                weight_debt   * cost_of_debt * (1 - TAX_RATE), 1
+            )
+        else:
+            wacc = round(cost_of_equity, 1)
+
+        # ── Spread & Signal ───────────────────────────────────────────────────
+        spread = round(roic - wacc, 1) if roic is not None else None
+
+        if roic is None:
+            roic_signal  = "na"
+            roic_verdict = "Insufficient data to calculate ROIC. Check financials manually."
+        elif spread >= 10:
+            roic_signal  = "strong"
+            roic_verdict = f"ROIC of {roic}% exceeds WACC by {spread}% — exceptional value creation. Ackman would approve."
+        elif spread >= 3:
+            roic_signal  = "positive"
+            roic_verdict = f"ROIC of {roic}% exceeds WACC of {wacc}% — business is creating value for shareholders."
+        elif spread >= 0:
+            roic_signal  = "marginal"
+            roic_verdict = f"ROIC barely covers WACC (spread: +{spread}%) — marginal value creation. Monitor closely."
+        elif spread >= -5:
+            roic_signal  = "negative"
+            roic_verdict = f"ROIC of {roic}% below WACC of {wacc}% — currently destroying shareholder value. Needs improvement."
+        else:
+            roic_signal  = "danger"
+            roic_verdict = f"ROIC of {roic}% significantly below WACC of {wacc}% (spread: {spread}%) — material value destruction."
+
+        return {
+            "roic":        roic,
+            "wacc":        wacc,
+            "spread":      spread,
+            "roic_signal": roic_signal,
+            "roic_verdict": roic_verdict,
+        }
+
+    except Exception as e:
+        return {
+            "roic": None, "wacc": None, "spread": None,
+            "roic_signal": "na",
+            "roic_verdict": f"Could not calculate ROIC/WACC: {str(e)}"
+        }
+
+
 def get_valuation_signal(ticker: str) -> dict:
     """
-    Pull P/E, EPS, and 52-week price data via yfinance.
+    Pull P/E, EPS, 52-week price data, and ROIC/WACC via yfinance.
     Returns a dict ready for the valuation tab in index.html.
     """
     try:
@@ -580,6 +676,9 @@ def get_valuation_signal(ticker: str) -> dict:
         if target_price and price:
             upside_pct = round((target_price / price - 1) * 100, 1)
 
+        # ROIC / WACC — Ackman dimension
+        roic_data = calc_roic_wacc(info)
+
         return {
             "ticker":          ticker.upper(),
             "price":           round(price, 2) if price else None,
@@ -596,6 +695,13 @@ def get_valuation_signal(ticker: str) -> dict:
             "upside_pct":      upside_pct,
             "signal":          signal,
             "explanation":     explanation,
+            # ROIC / WACC
+            "roic":            roic_data["roic"],
+            "wacc":            roic_data["wacc"],
+            "spread":          roic_data["spread"],
+            "roic_signal":     roic_data["roic_signal"],
+            "roic_verdict":    roic_data["roic_verdict"],
+            # Links
             "macrotrends_url": get_macrotrends_url(ticker),
             "yahoo_stats":     f"https://finance.yahoo.com/quote/{ticker.upper()}/key-statistics/",
             "simplywall":      f"https://simplywall.st/stocks/us/{ticker.lower()}/news",
@@ -613,6 +719,8 @@ def get_valuation_signal(ticker: str) -> dict:
             "pct_from_high": None, "range_position": None,
             "near_high": False, "pe_expanding": None,
             "target_price": None, "upside_pct": None,
+            "roic": None, "wacc": None, "spread": None,
+            "roic_signal": "na", "roic_verdict": "Data unavailable.",
         }
 
 # ── Routes ────────────────────────────────────────────────────────────────────
