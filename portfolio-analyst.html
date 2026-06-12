@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Portfolio Intelligence</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0f1e; --surface: #111827; --border: #1e293b;
+    --blue: #3b82f6; --indigo: #6366f1; --purple: #8b5cf6;
+    --text: #f1f5f9; --muted: #64748b; --dim: #94a3b8;
+    --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 14px; }
+  body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  #header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
+  #header-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  #header-title { font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+  #header-sub { font-size: 11px; color: var(--muted); }
+  #modes { display: flex; overflow-x: auto; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; scrollbar-width: none; }
+  #modes::-webkit-scrollbar { display: none; }
+  .mode-btn { background: var(--surface); color: var(--dim); border: none; border-radius: 6px; padding: 8px 13px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 5px; -webkit-tap-highlight-color: transparent; }
+  .mode-btn.active { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; }
+  #main { display: flex; flex: 1; overflow: hidden; }
+  #left { width: 270px; min-width: 250px; border-right: 1px solid var(--border); overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; scrollbar-width: thin; scrollbar-color: #334155 var(--bg); }
+  #left::-webkit-scrollbar { width: 3px; }
+  #left::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  .mode-card { background: var(--surface); border-radius: 8px; padding: 12px; }
+  label { display: block; font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  input[type=text], textarea { width: 100%; background: var(--bg); border: 1px solid #334155; border-radius: 6px; color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box; }
+  input[type=text]:focus, textarea:focus { border-color: var(--blue); }
+  #run-btn { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; -webkit-tap-highlight-color: transparent; }
+  #run-btn:disabled { background: #334155; cursor: not-allowed; }
+  .section-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 8px; border-top: 1px solid var(--border); }
+  .ticker-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #0f172a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .t-sym { font-size: 11px; font-weight: 700; width: 44px; flex-shrink: 0; }
+  .t-sym.p { color: var(--blue); }
+  .t-sym.w { color: #a78bfa; }
+  .t-name { font-size: 11px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-chg { font-size: 10px; flex-shrink: 0; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  #right { flex: 1; overflow-y: auto; padding: 20px 24px; scrollbar-width: thin; scrollbar-color: #334155 var(--bg); }
+  #right::-webkit-scrollbar { width: 4px; }
+  #right::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  #empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; text-align: center; }
+  #empty-icon { font-size: 52px; }
+  #empty-title { font-size: 16px; font-weight: 700; color: #475569; }
+  #empty-sub { font-size: 13px; color: #475569; max-width: 320px; line-height: 1.6; }
+  #loading { display: none; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 20px 0; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #334155; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #error-box { display: none; background: #450a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; color: #fca5a5; font-size: 13px; }
+  #result { display: none; }
+  #result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  #result-body { font-size: 13px; line-height: 1.75; }
+  #result-body h3 { color: #60a5fa; margin: 16px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  #result-body h2 { color: #93c5fd; margin: 20px 0 8px; font-size: 15px; font-weight: 800; }
+  #result-body p { color: var(--dim); margin: 3px 0; }
+  #result-body li { color: var(--dim); margin: 4px 0 4px 18px; }
+  #result-body .vbuy { color: var(--green); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #052e16; border-radius: 6px; }
+  #result-body .vavoid { color: var(--red); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #450a0a; border-radius: 6px; }
+  #result-body .vwatch { color: var(--yellow); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #451a03; border-radius: 6px; }
+  #result-body strong { color: var(--text); font-weight: 700; }
+  #result-body hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  @media (max-width: 700px) {
+    #main { flex-direction: column; }
+    #left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 48vh; }
+    #right { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <div id="header-icon">📡</div>
+  <div>
+    <div id="header-title">Portfolio Intelligence</div>
+    <div id="header-sub">9-Mode Analysis Engine · Raul's Portfolio</div>
+  </div>
+</div>
+<div id="modes"></div>
+<div id="main">
+  <div id="left">
+    <div class="mode-card">
+      <div id="card-icon" style="font-size:20px;margin-bottom:4px"></div>
+      <div id="card-title" style="font-weight:700;font-size:14px"></div>
+    </div>
+    <div id="fields"></div>
+    <button id="run-btn" onclick="run()">Run Analysis →</button>
+    <div class="section-label" style="margin-top:4px">Portfolio — tap to fill</div>
+    <div id="plist"></div>
+    <div class="section-label">Watchlist — tap to fill</div>
+    <div id="wlist"></div>
+  </div>
+  <div id="right">
+    <div id="empty"><div id="empty-icon">📡</div><div id="empty-title"></div><div id="empty-sub">Tap a ticker from the sidebar or type one, then run the analysis.</div></div>
+    <div id="loading"><div class="spinner"></div><span id="load-txt"></span></div>
+    <div id="error-box"></div>
+    <div id="result"><div id="result-header"><span id="r-icon"></span>&nbsp;<span id="r-title" style="font-weight:700;font-size:14px"></span></div><div id="result-body"></div></div>
+  </div>
+</div>
+<script>
+const API_KEY = "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";
+
+const PORTFOLIO = [
+  {t:"XAR",n:"SPDR S&P Aerospace & Defense ETF"},
+  {t:"CIBR",n:"First Trust NASDAQ Cybersecurity ETF"},
+  {t:"SMH",n:"VanEck Semiconductor ETF"},
+  {t:"BE",n:"Bloom Energy Corp"},
+  {t:"NU",n:"Nu Holdings Ltd"},
+  {t:"QQQM",n:"Invesco NASDAQ 100 ETF"},
+  {t:"VEU",n:"Vanguard FTSE All-World ex-US ETF"},
+  {t:"ICLN",n:"iShares Global Clean Energy ETF"},
+  {t:"VDE",n:"Vanguard Energy ETF"},
+  {t:"VUG",n:"Vanguard Growth ETF"},
+  {t:"VST",n:"Vistra Corp"},
+];
+const WATCHLIST = [
+  {t:"FLNC",n:"Fluence Energy Inc",c:"+12.30%"},
+  {t:"STAA",n:"Staar Surgical Co",c:"-1.47%"},
+  {t:"GKOS",n:"Glaukos Corp",c:"+1.45%"},
+  {t:"BUG",n:"Global X Cybersecurity ETF",c:"+1.67%"},
+  {t:"HYDR",n:"Global X Hydrogen ETF",c:"+4.97%"},
+  {t:"PLUG",n:"Plug Power Inc",c:"-1.05%"},
+  {t:"BATT",n:"Amplify Lithium & Battery ETF",c:"+4.86%"},
+  {t:"MRVL",n:"Marvell Technology Inc",c:"+11.13%"},
+  {t:"RKLB",n:"Rocket Lab Corp",c:"+9.26%"},
+  {t:"ASTS",n:"AST SpaceMobile Inc",c:"+11.73%"},
+  {t:"STM",n:"ST Microelectronics",c:"+10.43%"},
+  {t:"LUNR",n:"Intuitive Machines Inc",c:"+15.47%"},
+  {t:"TLN",n:"Talen Energy Corp",c:""},
+];
+const MODES = [
+  {id:"screener",icon:"🔍",short:"Screener",label:"Stock Screener",fields:[{k:"ticker",l:"Ticker (blank = full portfolio)",p:"e.g. SMH"}]},
+  {id:"earnings",icon:"📊",short:"Earnings",label:"Earnings Quality",fields:[{k:"ticker",l:"Ticker",p:"e.g. NU"}]},
+  {id:"thesis",icon:"💡",short:"Thesis",label:"Thesis Builder",fields:[{k:"ticker",l:"Ticker",p:"e.g. BE"},{k:"sector",l:"Sector",p:"e.g. Clean Energy"},{k:"hypothesis",l:"Your hypothesis",p:"e.g. Bloom Energy benefits from AI power demand...",big:true}]},
+  {id:"riskreward",icon:"⚖️",short:"Risk/Reward",label:"Risk-Reward",fields:[{k:"ticker",l:"Ticker",p:"e.g. MRVL"},{k:"price",l:"Entry price ($)",p:"e.g. 280"}]},
+  {id:"blindspot",icon:"🧿",short:"Blind Spot",label:"Blind Spot Checker",fields:[{k:"ticker",l:"Ticker or leave blank",p:"e.g. ICLN"},{k:"analysis",l:"Your analysis (optional)",p:"Paste your thesis...",big:true}]},
+  {id:"rotation",icon:"🔄",short:"Rotation",label:"Sector Rotation",fields:[{k:"phase",l:"Market phase",p:"e.g. late bull, sideways"},{k:"rates",l:"Rate environment",p:"e.g. elevated, cuts expected"}]},
+  {id:"conflict",icon:"🛡️",short:"Conflict",label:"Portfolio Conflict",fields:[]},
+  {id:"chartfund",icon:"📈",short:"Chart+Fund",label:"Chart + Fundamentals",fields:[{k:"ticker",l:"Ticker",p:"e.g. RKLB"},{k:"pattern",l:"Chart pattern",p:"e.g. breakout, cup & handle"}]},
+  {id:"journal",icon:"📓",short:"Journal",label:"Trade Journal",fields:[{k:"trades",l:"Paste recent trades (optional)",p:"Date | Ticker | Action | Price...",big:true}]},
+];
+
+let mode = MODES[0], inputs = {};
+
+function ps() { return PORTFOLIO.map(p=>`${p.t} (${p.n})`).join(", "); }
+function ws() { return WATCHLIST.map(w=>`${w.t} (${w.n})`).join(", "); }
+
+function prompt() {
+  const t = inputs.ticker||"", base = `Portfolio: ${ps()}. Watchlist: ${ws()}.`;
+  const p = {
+    screener: `${base} Screen: ${t||"my full portfolio"}. Give fundamentals (PE, ROE, debt/equity, revenue growth), technicals (trend, RSI, MAs, volume), and verdict BUY/WATCH/AVOID per holding. Be direct.`,
+    earnings: `${base} Audit last 4 quarters of ${t||"BE and NU"}. Find revenue vs profit mismatch, cash flow gaps, margin red flags, anomalies. Rate severity Low/Medium/High each.`,
+    thesis: `${base} Stock: ${t||"strongest conviction in my portfolio"}. Sector: ${inputs.sector||"infer"}. Hypothesis: ${inputs.hypothesis||"outperforms peers 12 months"}. Validate or destroy using moat, institutional activity, chart. Flag contradictions hard.`,
+    riskreward: `${base} Entering ${t||"a position"} at $${inputs.price||"current price"}. Give: stop-loss, 3 price targets (short/medium/long), risk-reward ratio. Clear entry recommendation at end.`,
+    blindspot: `${base} Review my analysis of ${t||"my portfolio"}${inputs.analysis?`: "${inputs.analysis}"`:""}. Find logical errors, overconfident assumptions, ignored data, macro risks. Flag blind spots for a Peru-based USD investor. Be brutal.`,
+    rotation: `${base} Market phase: ${inputs.phase||"late bull/uncertain"}. Rates: ${inputs.rates||"elevated, cuts expected"}. Map each sector (defense, cybersecurity, semiconductors, clean energy, energy, fintech, international) as accumulation/distribution/markup. Verdict hold/trim/add. Flag 2 watchlist names to rotate into now.`,
+    conflict: `${base} Goal: growth with inflation hedge. Find: overlapping sector exposure, correlated positions, holdings contradicting my goal, safest rebalancing move. Cross-reference watchlist before adding anything.`,
+    chartfund: `${base} Stock: ${t||"most technically interesting in my portfolio"}. Pattern: ${inputs.pattern||"assess most likely"}. Cross-check recent results, institutional activity, news. Do fundamentals support the setup? Final trade verdict.`,
+    journal: `${base} ${inputs.trades?`My recent trades: ${inputs.trades}.`:"Assume I built current portfolio over 6 months."} Find: recurring mistakes, overtraded setups, early/late exits, actual vs perceived win rate. Give 3 rules for my trading plan. Specific to growth investor buying near 52-week lows.`,
+  };
+  return p[mode.id]||p.screener;
+}
+
+async function run() {
+  const btn = document.getElementById("run-btn");
+  btn.disabled = true;
+  document.getElementById("empty").style.display = "none";
+  document.getElementById("error-box").style.display = "none";
+  document.getElementById("result").style.display = "none";
+  const ld = document.getElementById("loading");
+  ld.style.display = "flex";
+  document.getElementById("load-txt").textContent = `Running ${mode.label}...`;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6", max_tokens:1500,
+        system:"You are a sharp, direct investment analyst. Use ## for section headers, - for bullets. Verdicts BUY/WATCH/AVOID/TRIM/HOLD on their own line in caps. Be concise and actionable.",
+        messages:[{role:"user",content:prompt()}]
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const txt = (data.content||[]).map(b=>b.text||"").join("\n").trim();
+    if(!txt) throw new Error("Empty response");
+    ld.style.display = "none";
+    document.getElementById("r-icon").textContent = mode.icon;
+    document.getElementById("r-title").textContent = mode.label+" Report";
+    document.getElementById("result-body").innerHTML = fmt(txt);
+    document.getElementById("result").style.display = "block";
+  } catch(e) {
+    ld.style.display = "none";
+    const eb = document.getElementById("error-box");
+    eb.textContent = "⚠️ "+e.message;
+    eb.style.display = "block";
+  } finally { btn.disabled = false; }
+}
+
+function fmt(txt) {
+  let html="";
+  txt.split("\n").forEach(line=>{
+    const t=line.trim();
+    if(!t){html+='<div style="height:6px"></div>';return;}
+    if(t.startsWith("## ")){html+=`<h3>${esc(t.slice(3))}</h3>`;return;}
+    if(t.startsWith("# ")){html+=`<h2>${esc(t.slice(2))}</h2>`;return;}
+    if(/^(BUY|ADD)/.test(t)){html+=`<div class="vbuy">${esc(t)}</div>`;return;}
+    if(/^AVOID/.test(t)){html+=`<div class="vavoid">${esc(t)}</div>`;return;}
+    if(/^(WATCH|TRIM|HOLD)/.test(t)){html+=`<div class="vwatch">${esc(t)}</div>`;return;}
+    if(t.startsWith("- ")||t.startsWith("• ")){html+=`<li>${bold(t.slice(2))}</li>`;return;}
+    if(t==="---"){html+="<hr>";return;}
+    html+=`<p>${bold(t)}</p>`;
+  });
+  return html;
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function bold(s){return esc(s).replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");}
+
+function setField(k,v){inputs[k]=v;const el=document.getElementById("f_"+k);if(el)el.value=v;}
+
+function renderModes(){
+  const bar=document.getElementById("modes");bar.innerHTML="";
+  MODES.forEach(m=>{
+    const b=document.createElement("button");
+    b.className="mode-btn"+(m.id===mode.id?" active":"");
+    b.innerHTML=`${m.icon} ${m.short}`;
+    b.onclick=()=>{mode=m;inputs={};renderUI();showEmpty();};
+    bar.appendChild(b);
+  });
+}
+
+function renderUI(){
+  renderModes();
+  document.getElementById("card-icon").textContent=mode.icon;
+  document.getElementById("card-title").textContent=mode.label;
+  document.getElementById("empty-icon").textContent=mode.icon;
+  document.getElementById("empty-title").textContent=mode.label;
+  const fc=document.getElementById("fields");fc.innerHTML="";
+  if(mode.fields.length===0){
+    fc.innerHTML='<div style="font-size:12px;color:#64748b;background:#111827;border-radius:8px;padding:10px 12px">Runs on your full portfolio automatically.</div>';
+    return;
+  }
+  mode.fields.forEach(f=>{
+    const w=document.createElement("div");
+    const l=document.createElement("label");l.textContent=f.l;w.appendChild(l);
+    if(f.big){
+      const ta=document.createElement("textarea");ta.rows=3;ta.placeholder=f.p;ta.id="f_"+f.k;
+      ta.oninput=()=>{inputs[f.k]=ta.value;};w.appendChild(ta);
+    } else {
+      const inp=document.createElement("input");inp.type="text";inp.placeholder=f.p;inp.id="f_"+f.k;
+      inp.oninput=()=>{inputs[f.k]=inp.value;};w.appendChild(inp);
+    }
+    fc.appendChild(w);
+  });
+}
+
+function showEmpty(){
+  document.getElementById("empty").style.display="flex";
+  document.getElementById("loading").style.display="none";
+  document.getElementById("error-box").style.display="none";
+  document.getElementById("result").style.display="none";
+}
+
+function renderLists(){
+  const pl=document.getElementById("plist");
+  PORTFOLIO.forEach(p=>{
+    const r=document.createElement("div");r.className="ticker-row";
+    r.innerHTML=`<span class="t-sym p">${p.t}</span><span class="t-name">${p.n}</span>`;
+    r.onclick=()=>setField("ticker",p.t);pl.appendChild(r);
+  });
+  const wl=document.getElementById("wlist");
+  WATCHLIST.forEach(w=>{
+    const r=document.createElement("div");r.className="ticker-row";
+    const cc=w.c.startsWith("+")?"pos":w.c.startsWith("-")?"neg":"";
+    r.innerHTML=`<span class="t-sym w">${w.t}</span><span class="t-name">${w.n}</span><span class="t-chg ${cc}">${w.c}</span>`;
+    r.onclick=()=>setField("ticker",w.t);wl.appendChild(r);
+  });
+}
+
+renderUI();
+renderLists();
+</script>
+</body>
+</html>
