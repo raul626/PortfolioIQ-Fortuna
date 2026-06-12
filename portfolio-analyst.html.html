@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Portfolio Intelligence</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --border: #1e293b;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --purple: #8b5cf6;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --dim: #94a3b8;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 14px; }
+  body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+
+  /* HEADER */
+  #header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg); flex-shrink: 0;
+  }
+  #header-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  #header-title { font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+  #header-sub { font-size: 11px; color: var(--muted); }
+
+  /* MODE TABS */
+  #modes {
+    display: flex; overflow-x: auto; gap: 4px;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; scrollbar-width: none;
+  }
+  #modes::-webkit-scrollbar { display: none; }
+  .mode-btn {
+    background: var(--surface); color: var(--dim); border: none;
+    border-radius: 6px; padding: 8px 13px; font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 5px;
+    -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+  }
+  .mode-btn.active { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; }
+
+  /* MAIN LAYOUT */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* LEFT PANEL */
+  #left {
+    width: 280px; min-width: 260px; border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    flex-shrink: 0; scrollbar-width: thin; scrollbar-color: #334155 var(--bg);
+  }
+  #left::-webkit-scrollbar { width: 3px; }
+  #left::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+  .mode-card { background: var(--surface); border-radius: 8px; padding: 12px; }
+  .mode-card-icon { font-size: 20px; margin-bottom: 4px; }
+  .mode-card-title { font-weight: 700; font-size: 14px; }
+
+  label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  input[type=text], textarea {
+    width: 100%; background: var(--bg); border: 1px solid #334155; border-radius: 6px;
+    color: var(--text); padding: 9px 11px; font-size: 13px; outline: none;
+    font-family: inherit; resize: vertical;
+  }
+  input[type=text]:focus, textarea:focus { border-color: var(--blue); }
+  textarea { line-height: 1.5; }
+
+  #run-btn {
+    background: linear-gradient(135deg, var(--blue), var(--indigo));
+    color: #fff; border: none; border-radius: 8px; padding: 13px;
+    font-weight: 700; font-size: 14px; cursor: pointer; width: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #run-btn:disabled { background: #334155; cursor: not-allowed; }
+
+  .section-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; padding-top: 4px; border-top: 1px solid var(--border); }
+  .ticker-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid #111827;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .ticker-row:active { background: #1e293b; border-radius: 4px; }
+  .t-sym { font-size: 11px; font-weight: 700; width: 44px; flex-shrink: 0; }
+  .t-sym.portfolio { color: var(--blue); }
+  .t-sym.watchlist { color: #a78bfa; }
+  .t-name { font-size: 11px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-chg { font-size: 10px; flex-shrink: 0; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+
+  /* RIGHT PANEL */
+  #right { flex: 1; overflow-y: auto; padding: 20px 24px; scrollbar-width: thin; scrollbar-color: #334155 var(--bg); }
+  #right::-webkit-scrollbar { width: 4px; }
+  #right::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+  #empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: #334155; text-align: center; }
+  #empty-icon { font-size: 52px; }
+  #empty-title { font-size: 16px; font-weight: 700; color: #475569; }
+  #empty-sub { font-size: 13px; color: #475569; max-width: 320px; line-height: 1.6; }
+
+  #loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 20px 0; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #334155; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #error-box { background: #450a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; color: #fca5a5; font-size: 13px; }
+
+  #result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  #result-icon { font-size: 18px; }
+  #result-title { font-weight: 700; font-size: 15px; }
+  #result-body { font-size: 13px; line-height: 1.7; }
+  #result-body h2 { color: #93c5fd; margin: 20px 0 8px; font-size: 16px; }
+  #result-body h3 { color: #60a5fa; margin: 16px 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  #result-body p { color: var(--dim); margin: 3px 0; }
+  #result-body li { color: var(--dim); margin: 3px 0 3px 18px; }
+  #result-body .verdict-buy { color: var(--green); font-weight: 800; font-size: 15px; margin: 10px 0 4px; }
+  #result-body .verdict-avoid { color: var(--red); font-weight: 800; font-size: 15px; margin: 10px 0 4px; }
+  #result-body .verdict-watch { color: var(--yellow); font-weight: 800; font-size: 15px; margin: 10px 0 4px; }
+  #result-body strong { color: var(--text); font-weight: 700; }
+  #result-body hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  /* MOBILE: stack vertically on small screens */
+  @media (max-width: 700px) {
+    #main { flex-direction: column; }
+    #left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 50vh; }
+    #right { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-icon">📡</div>
+  <div>
+    <div id="header-title">Portfolio Intelligence</div>
+    <div id="header-sub">9-Mode Analysis Engine · Raul's Portfolio</div>
+  </div>
+</div>
+
+<div id="modes"></div>
+
+<div id="main">
+  <div id="left">
+    <div class="mode-card">
+      <div class="mode-card-icon" id="card-icon"></div>
+      <div class="mode-card-title" id="card-title"></div>
+    </div>
+    <div id="fields-container"></div>
+    <button id="run-btn" onclick="runAnalysis()">Run Analysis →</button>
+
+    <div class="section-label" style="margin-top:6px">Portfolio — tap to fill</div>
+    <div id="portfolio-list"></div>
+    <div class="section-label">Watchlist — tap to fill</div>
+    <div id="watchlist-list"></div>
+  </div>
+
+  <div id="right">
+    <div id="empty-state">
+      <div id="empty-icon">📡</div>
+      <div id="empty-title">Stock Screener</div>
+      <div id="empty-sub">Click a ticker from the sidebar to pre-fill, or type one manually, then run the analysis.</div>
+    </div>
+    <div id="loading" style="display:none"><div class="spinner"></div><span id="loading-text">Running analysis...</span></div>
+    <div id="error-box" style="display:none"></div>
+    <div id="result" style="display:none">
+      <div id="result-header"><span id="result-icon"></span><span id="result-title"></span></div>
+      <div id="result-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PORTFOLIO = [
+  { ticker:"XAR", name:"SPDR S&P Aerospace & Defense ETF" },
+  { ticker:"CIBR", name:"First Trust NASDAQ Cybersecurity ETF" },
+  { ticker:"SMH", name:"VanEck Semiconductor ETF" },
+  { ticker:"BE", name:"Bloom Energy Corp" },
+  { ticker:"NU", name:"Nu Holdings Ltd" },
+  { ticker:"QQQM", name:"Invesco NASDAQ 100 ETF" },
+  { ticker:"VEU", name:"Vanguard FTSE All-World ex-US ETF" },
+  { ticker:"ICLN", name:"iShares Global Clean Energy ETF" },
+  { ticker:"VDE", name:"Vanguard Energy ETF" },
+  { ticker:"VUG", name:"Vanguard Growth ETF" },
+  { ticker:"VST", name:"Vistra Corp" },
+];
+
+const WATCHLIST = [
+  { ticker:"FLNC", name:"Fluence Energy Inc", price:24.28, change:"+12.30%" },
+  { ticker:"VST", name:"Vistra Corp", price:146.38, change:"+5.66%" },
+  { ticker:"STAA", name:"Staar Surgical Co", price:28.90, change:"-1.47%" },
+  { ticker:"GKOS", name:"Glaukos Corp", price:124.26, change:"+1.45%" },
+  { ticker:"BUG", name:"Global X Cybersecurity ETF", price:34.15, change:"+1.67%" },
+  { ticker:"HYDR", name:"Global X Hydrogen ETF", price:54.16, change:"+4.97%" },
+  { ticker:"PLUG", name:"Plug Power Inc", price:2.83, change:"-1.05%" },
+  { ticker:"BATT", name:"Amplify Lithium & Battery ETF", price:15.98, change:"+4.86%" },
+  { ticker:"MRVL", name:"Marvell Technology Inc", price:280.71, change:"+11.13%" },
+  { ticker:"SATS", name:"EchoStar Corp", price:128.13, change:"+11.19%" },
+  { ticker:"RKLB", name:"Rocket Lab Corp", price:114.78, change:"+9.26%" },
+  { ticker:"ASTS", name:"AST SpaceMobile Inc", price:97.56, change:"+11.73%" },
+  { ticker:"STM", name:"ST Microelectronics", price:78.12, change:"+10.43%" },
+  { ticker:"LUNR", name:"Intuitive Machines Inc", price:30.64, change:"+15.47%" },
+];
+
+const MODES = [
+  { id:"screener", label:"Stock Screener", icon:"🔍", short:"Screener",
+    fields:[{key:"ticker",label:"Ticker (blank = full portfolio)",ph:"e.g. SMH or leave blank"}] },
+  { id:"earnings", label:"Earnings Quality", icon:"📊", short:"Earnings",
+    fields:[{key:"ticker",label:"Ticker",ph:"e.g. NU"}] },
+  { id:"thesis", label:"Thesis Builder", icon:"💡", short:"Thesis",
+    fields:[
+      {key:"ticker",label:"Ticker",ph:"e.g. BE"},
+      {key:"sector",label:"Sector",ph:"e.g. Clean Energy"},
+      {key:"hypothesis",label:"Your hypothesis",ph:"e.g. Bloom Energy benefits from data center power demand...",big:true}
+    ]},
+  { id:"riskreward", label:"Risk-Reward", icon:"⚖️", short:"Risk/Reward",
+    fields:[
+      {key:"ticker",label:"Ticker",ph:"e.g. MRVL"},
+      {key:"price",label:"Entry price ($)",ph:"e.g. 280"}
+    ]},
+  { id:"blindspot", label:"Blind Spot", icon:"🧿", short:"Blind Spot",
+    fields:[
+      {key:"ticker",label:"Ticker or 'portfolio'",ph:"e.g. ICLN or leave blank"},
+      {key:"analysis",label:"Your analysis (optional)",ph:"Paste your thesis, notes...",big:true}
+    ]},
+  { id:"rotation", label:"Sector Rotation", icon:"🔄", short:"Rotation",
+    fields:[
+      {key:"phase",label:"Market phase",ph:"e.g. late bull, sideways"},
+      {key:"rates",label:"Rate environment",ph:"e.g. elevated, cuts expected"}
+    ]},
+  { id:"conflict", label:"Portfolio Conflict", icon:"🛡️", short:"Conflict", fields:[] },
+  { id:"chartfund", label:"Chart + Fundamentals", icon:"📈", short:"Chart+Fund",
+    fields:[
+      {key:"ticker",label:"Ticker",ph:"e.g. RKLB"},
+      {key:"pattern",label:"Chart pattern",ph:"e.g. breakout, cup & handle"}
+    ]},
+  { id:"journal", label:"Trade Journal", icon:"📓", short:"Journal",
+    fields:[{key:"trades",label:"Paste recent trades (optional)",ph:"Date | Ticker | Action | Price | Size | Result...",big:true}]},
+];
+
+let activeMode = MODES[0];
+let inputs = {};
+
+function portfolioStr() { return PORTFOLIO.map(p=>`${p.ticker} (${p.name})`).join(', '); }
+function watchlistStr() { return WATCHLIST.map(w=>`${w.ticker} (${w.name}, $${w.price}, ${w.change})`).join('; '); }
+
+function buildPrompt(mode) {
+  const ps = portfolioStr(), ws = watchlistStr();
+  const sys = `You are a sharp, direct investment analyst. The user holds: ${ps}. Watchlist: ${ws}. Be concise, specific, brutally honest. Use ## for section headers, - for bullets. Always end with clear actionable recommendations. Comment on watchlist additions vs current portfolio when relevant.`;
+
+  const t = inputs.ticker || '';
+  switch(mode.id) {
+    case 'screener': return {sys, user:`Screen: ${t||'my full portfolio'}. Give: fundamentals score (PE, ROE, debt-to-equity, revenue growth), technical score (trend, RSI, moving averages, volume), and a combined technofunda verdict — BUY / WATCH / AVOID. Be direct. No fluff. If full portfolio, rank all holdings and flag any to AVOID.`};
+    case 'earnings': return {sys, user:`Audit the last 4 quarters of ${t||'BE and NU (my equity holdings)'}. Find: revenue vs. profit mismatch, cash flow vs. reported earnings gaps, red flags in margins, accounting anomalies. For each issue: severity (Low/Medium/High) and price impact.`};
+    case 'thesis': return {sys, user:`Stock: ${t||'pick most thesis-driven from my portfolio'}. Sector: ${inputs.sector||'infer'}. My hypothesis: ${inputs.hypothesis||'this outperforms sector peers over 12 months'}. Validate or destroy using: business moat, institutional activity, chart structure. Flag contradictions hard.`};
+    case 'riskreward': return {sys, user:`Entering ${t||'a position'} at $${inputs.price||'current price'}. Based on support/resistance, fundamental fair value, sector tailwinds/headwinds give me: stop-loss level, 3 targets (short/medium/long term), risk-reward ratio. Clear entry recommendation at the end.`};
+    case 'blindspot': return {sys, user:`Review my analysis of ${t||'my portfolio'}${inputs.analysis?`: "${inputs.analysis}"`:''}. Find: logical errors, overconfident assumptions, ignored data, macro risks. Be direct. Don't soften it. Also flag blind spots specific to a Peru-based investor holding USD assets.`};
+    case 'rotation': return {sys, user:`Market phase: ${inputs.phase||'late bull / uncertain'}. Rate trend: ${inputs.rates||'elevated, cuts expected'}. Map each sector in my portfolio (defense, cybersecurity, semiconductors, clean energy, conventional energy, fintech, international) as accumulation/distribution/markup. Verdict: hold/trim/add. Flag 2 watchlist names to rotate into now.`};
+    case 'conflict': return {sys, user:`I hold: ${ps}. Goal: growth with inflation hedge. Find: overlapping sector exposure, correlated stocks, any holding contradicting my goal, safest rebalancing move. Cross-reference watchlist for conflicts before I add anything.`};
+    case 'chartfund': return {sys, user:`Stock: ${t||'most technically interesting in my portfolio'}. Pattern: ${inputs.pattern||'assess most likely pattern'}. Cross-check with: recent quarterly results, institutional activity, news flow. Do fundamentals support or contradict the technical setup? Final trade verdict.`};
+    case 'journal': return {sys, user:`${inputs.trades?`My recent trades: ${inputs.trades}. `:'Assume I built my current portfolio over 6 months. '}Find: recurring mistakes, overtraded setups, early/late exits, actual vs perceived win rate. Give 3 rules for my trading plan immediately. Be specific to a growth investor who buys near 52-week lows.`};
+  }
+}
+
+function renderModes() {
+  const bar = document.getElementById('modes');
+  bar.innerHTML = '';
+  MODES.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'mode-btn' + (m.id === activeMode.id ? ' active' : '');
+    btn.innerHTML = `${m.icon} ${m.short}`;
+    btn.onclick = () => { activeMode = m; inputs = {}; renderModeUI(); showEmpty(); };
+    bar.appendChild(btn);
+  });
+}
+
+function renderModeUI() {
+  renderModes();
+  document.getElementById('card-icon').textContent = activeMode.icon;
+  document.getElementById('card-title').textContent = activeMode.label;
+  document.getElementById('empty-icon').textContent = activeMode.icon;
+  document.getElementById('empty-title').textContent = activeMode.label;
+
+  const fc = document.getElementById('fields-container');
+  fc.innerHTML = '';
+  if (activeMode.fields.length === 0) {
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size:12px;color:#64748b;background:#111827;border-radius:8px;padding:10px 12px;';
+    note.textContent = 'No inputs needed — runs on your full portfolio automatically.';
+    fc.appendChild(note);
+    return;
+  }
+  activeMode.fields.forEach(f => {
+    const wrap = document.createElement('div');
+    const lbl = document.createElement('label');
+    lbl.textContent = f.label;
+    wrap.appendChild(lbl);
+    if (f.big) {
+      const ta = document.createElement('textarea');
+      ta.rows = 4; ta.placeholder = f.ph; ta.id = 'field_' + f.key;
+      ta.value = inputs[f.key] || '';
+      ta.oninput = () => { inputs[f.key] = ta.value; };
+      wrap.appendChild(ta);
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.placeholder = f.ph; inp.id = 'field_' + f.key;
+      inp.value = inputs[f.key] || '';
+      inp.oninput = () => { inputs[f.key] = inp.value; };
+      wrap.appendChild(inp);
+    }
+    fc.appendChild(wrap);
+  });
+}
+
+function renderLists() {
+  const pl = document.getElementById('portfolio-list');
+  PORTFOLIO.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'ticker-row';
+    row.innerHTML = `<span class="t-sym portfolio">${p.ticker}</span><span class="t-name">${p.name}</span>`;
+    row.onclick = () => { inputs.ticker = p.ticker; syncField('ticker', p.ticker); };
+    pl.appendChild(row);
+  });
+  const wl = document.getElementById('watchlist-list');
+  WATCHLIST.forEach(w => {
+    const row = document.createElement('div');
+    row.className = 'ticker-row';
+    const cls = w.change.startsWith('+') ? 'pos' : 'neg';
+    row.innerHTML = `<span class="t-sym watchlist">${w.ticker}</span><span class="t-name">${w.name}</span><span class="t-chg ${cls}">${w.change}</span>`;
+    row.onclick = () => { inputs.ticker = w.ticker; inputs.price = String(w.price); syncField('ticker', w.ticker); syncField('price', String(w.price)); };
+    wl.appendChild(row);
+  });
+}
+
+function syncField(key, val) {
+  const el = document.getElementById('field_' + key);
+  if (el) el.value = val;
+}
+
+function showEmpty() {
+  document.getElementById('empty-state').style.display = 'flex';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+}
+
+function formatResult(text) {
+  let html = '';
+  text.split('\n').forEach(line => {
+    line = line.trim();
+    if (!line) { html += '<div style="height:6px"></div>'; return; }
+    if (line.startsWith('## ')) { html += `<h3>${esc(line.slice(3))}</h3>`; return; }
+    if (line.startsWith('# ')) { html += `<h2>${esc(line.slice(2))}</h2>`; return; }
+    if (/^(BUY|HOLD|ADD)/.test(line)) { html += `<p class="verdict-buy">${esc(line)}</p>`; return; }
+    if (/^AVOID/.test(line)) { html += `<p class="verdict-avoid">${esc(line)}</p>`; return; }
+    if (/^(WATCH|TRIM|NEUTRAL)/.test(line)) { html += `<p class="verdict-watch">${esc(line)}</p>`; return; }
+    if (line.startsWith('- ') || line.startsWith('• ')) { html += `<li>${fmt(line.slice(2))}</li>`; return; }
+    if (line === '---') { html += '<hr>'; return; }
+    html += `<p>${fmt(line)}</p>`;
+  });
+  return html;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(s) {
+  return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
+
+async function runAnalysis() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loading-text').textContent = `Running ${activeMode.label}...`;
+
+  const {sys, user} = buildPrompt(activeMode);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: sys,
+        messages: [{role:'user', content: user}]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = (data.content||[]).map(b=>b.text||'').join('\n');
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('result-icon').textContent = activeMode.icon;
+    document.getElementById('result-title').textContent = activeMode.label + ' Report';
+    document.getElementById('result-body').innerHTML = formatResult(text);
+    document.getElementById('result').style.display = 'block';
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    const eb = document.getElementById('error-box');
+    eb.textContent = '⚠️ ' + (e.message || 'Request failed.');
+    eb.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Init
+renderModeUI();
+renderLists();
+</script>
+</body>
+</html>
