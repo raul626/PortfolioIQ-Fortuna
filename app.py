@@ -808,7 +808,21 @@ def get_screener():
 def trigger_screener():
     threading.Thread(target=refresh_screener_cache, daemon=True).start()
     return jsonify({"status":"running"})
-
+@app.route("/api/claude", methods=["POST"])
+def claude_proxy():
+    import requests as req
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": {"message": "ANTHROPIC_API_KEY not set"}}), 500
+    try:
+        resp = req.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={"Content-Type": "application/json", "x-api-key": api_key, "anthropic-version": "2023-06-01"},
+            json=request.json, timeout=60
+        )
+        return jsonify(resp.json()), resp.status_code
+    except Exception as e:
+        return jsonify({"error": {"message": str(e)}}), 500
 if __name__ == "__main__":
     setup_scheduler()
     port = int(os.environ.get("PORT", 5050))
