@@ -30,7 +30,7 @@ from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__, template_folder=".")
-CORS(app)
+CORS(app, origins=["https://raul626.github.io"])
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
