@@ -16,9 +16,9 @@
   }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 14px; }
   body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
-  #header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
+  #header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
   #header-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  #header-title { font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+  #header-title { font-weight: 800; font-size: 16px; }
   #header-sub { font-size: 11px; color: var(--muted); }
   #modes { display: flex; overflow-x: auto; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; scrollbar-width: none; }
   #modes::-webkit-scrollbar { display: none; }
@@ -32,13 +32,12 @@
   label { display: block; font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
   input[type=text], textarea { width: 100%; background: var(--bg); border: 1px solid #334155; border-radius: 6px; color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box; }
   input[type=text]:focus, textarea:focus { border-color: var(--blue); }
-  #run-btn { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; -webkit-tap-highlight-color: transparent; }
-  #run-btn:disabled { background: #334155; cursor: not-allowed; }
+  .run-btn { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; -webkit-tap-highlight-color: transparent; }
+  .run-btn:disabled { background: #334155; cursor: not-allowed; }
   .section-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 8px; border-top: 1px solid var(--border); }
   .ticker-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #0f172a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .t-sym { font-size: 11px; font-weight: 700; width: 44px; flex-shrink: 0; }
-  .t-sym.p { color: var(--blue); }
-  .t-sym.w { color: #a78bfa; }
+  .t-sym.p { color: var(--blue); } .t-sym.w { color: #a78bfa; }
   .t-name { font-size: 11px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .t-chg { font-size: 10px; flex-shrink: 0; }
   .pos { color: var(--green); } .neg { color: var(--red); }
@@ -46,28 +45,54 @@
   #right::-webkit-scrollbar { width: 4px; }
   #right::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
   #empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; text-align: center; }
-  #empty-icon { font-size: 52px; }
-  #empty-title { font-size: 16px; font-weight: 700; color: #475569; }
-  #empty-sub { font-size: 13px; color: #475569; max-width: 320px; line-height: 1.6; }
-  #loading { display: none; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 20px 0; }
   .spinner { width: 16px; height: 16px; border: 2px solid #334155; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  .spinner-lg { width: 32px; height: 32px; border-width: 3px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #error-box { display: none; background: #450a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; color: #fca5a5; font-size: 13px; }
-  #result { display: none; }
-  #result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  #result-body { font-size: 13px; line-height: 1.75; }
+  .error-box { background: #450a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 16px; color: #fca5a5; font-size: 13px; }
   #result-body h3 { color: #60a5fa; margin: 16px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
   #result-body h2 { color: #93c5fd; margin: 20px 0 8px; font-size: 15px; font-weight: 800; }
-  #result-body p { color: var(--dim); margin: 3px 0; }
-  #result-body li { color: var(--dim); margin: 4px 0 4px 18px; }
+  #result-body p { color: var(--dim); margin: 3px 0; line-height: 1.7; }
+  #result-body li { color: var(--dim); margin: 4px 0 4px 18px; line-height: 1.7; }
   #result-body .vbuy { color: var(--green); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #052e16; border-radius: 6px; }
   #result-body .vavoid { color: var(--red); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #450a0a; border-radius: 6px; }
   #result-body .vwatch { color: var(--yellow); font-weight: 800; font-size: 14px; margin: 10px 0 4px; padding: 6px 10px; background: #451a03; border-radius: 6px; }
   #result-body strong { color: var(--text); font-weight: 700; }
   #result-body hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* 52-WEEK RADAR */
+  .radar-section { margin-bottom: 28px; }
+  .radar-section-title { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .radar-card { background: var(--surface); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .radar-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .radar-ticker { font-weight: 800; font-size: 14px; color: var(--blue); }
+  .radar-name { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .radar-price { font-size: 15px; font-weight: 700; text-align: right; }
+  .radar-pct { font-size: 11px; text-align: right; margin-top: 1px; }
+  .range-bar-wrap { position: relative; margin: 6px 0 8px; }
+  .range-bar-bg { height: 6px; background: #1e293b; border-radius: 3px; width: 100%; }
+  .range-bar-fill { height: 6px; border-radius: 3px; position: absolute; top: 0; left: 0; transition: width 0.5s; }
+  .range-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .radar-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .badge-buy { background: #052e16; color: var(--green); }
+  .badge-hold { background: #1c1917; color: var(--yellow); }
+  .badge-trim { background: #450a0a; color: var(--red); }
+  .badge-na { background: #1e293b; color: var(--muted); }
+
+  /* PORTFOLIO MANAGER */
+  .pm-section { margin-bottom: 20px; }
+  .pm-section-title { font-size: 12px; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .pm-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--surface); border-radius: 6px; margin-bottom: 6px; }
+  .pm-ticker { font-weight: 700; font-size: 13px; width: 50px; flex-shrink: 0; }
+  .pm-name { font-size: 12px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pm-del { background: #450a0a; color: var(--red); border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pm-add-row { display: flex; gap: 8px; margin-top: 8px; }
+  .pm-add-row input { flex: 1; }
+  .pm-add-btn { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .pm-save-btn { background: linear-gradient(135deg, #059669, #10b981); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; margin-top: 8px; }
+
   @media (max-width: 700px) {
     #main { flex-direction: column; }
-    #left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 48vh; }
+    #left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 46vh; }
     #right { padding: 14px 16px; }
   }
 </style>
@@ -77,7 +102,7 @@
   <div id="header-icon">📡</div>
   <div>
     <div id="header-title">Portfolio Intelligence</div>
-    <div id="header-sub">9-Mode Analysis Engine · Raul's Portfolio</div>
+    <div id="header-sub">11-Mode Analysis · Raul's Portfolio</div>
   </div>
 </div>
 <div id="modes"></div>
@@ -88,23 +113,31 @@
       <div id="card-title" style="font-weight:700;font-size:14px"></div>
     </div>
     <div id="fields"></div>
-    <button id="run-btn" onclick="run()">Run Analysis →</button>
+    <button class="run-btn" id="run-btn" onclick="run()">Run Analysis →</button>
     <div class="section-label" style="margin-top:4px">Portfolio — tap to fill</div>
     <div id="plist"></div>
     <div class="section-label">Watchlist — tap to fill</div>
     <div id="wlist"></div>
   </div>
   <div id="right">
-    <div id="empty"><div id="empty-icon">📡</div><div id="empty-title"></div><div id="empty-sub">Tap a ticker from the sidebar or type one, then run the analysis.</div></div>
-    <div id="loading"><div class="spinner"></div><span id="load-txt"></span></div>
-    <div id="error-box"></div>
-    <div id="result"><div id="result-header"><span id="r-icon"></span>&nbsp;<span id="r-title" style="font-weight:700;font-size:14px"></span></div><div id="result-body"></div></div>
+    <div id="empty"><div style="font-size:52px" id="empty-icon">📡</div><div style="font-size:16px;font-weight:700;color:#475569;margin-top:8px" id="empty-title"></div><div style="font-size:13px;color:#475569;max-width:320px;line-height:1.6;margin-top:4px">Tap a ticker from the sidebar or type one, then run the analysis.</div></div>
+    <div id="loading" style="display:none;align-items:center;gap:10px;color:#64748b;font-size:13px;padding:20px 0"><div class="spinner"></div><span id="load-txt"></span></div>
+    <div id="error-out" style="display:none"></div>
+    <div id="result" style="display:none">
+      <div id="result-header" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)"><span id="r-icon"></span>&nbsp;<span id="r-title" style="font-weight:700;font-size:14px"></span></div>
+      <div id="result-body" style="font-size:13px;line-height:1.75"></div>
+    </div>
+    <!-- 52-week radar panel -->
+    <div id="radar-panel" style="display:none"></div>
+    <!-- Portfolio manager panel -->
+    <div id="pm-panel" style="display:none"></div>
   </div>
 </div>
 <script>
-const API_KEY = "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";
+const RENDER = "https://portfolioiq-fortuna.onrender.com";
 
-const PORTFOLIO = [
+// ── Default lists (overridden by localStorage) ─────────────────────────────
+const DEFAULT_PORTFOLIO = [
   {t:"XAR",n:"SPDR S&P Aerospace & Defense ETF"},
   {t:"CIBR",n:"First Trust NASDAQ Cybersecurity ETF"},
   {t:"SMH",n:"VanEck Semiconductor ETF"},
@@ -117,7 +150,7 @@ const PORTFOLIO = [
   {t:"VUG",n:"Vanguard Growth ETF"},
   {t:"VST",n:"Vistra Corp"},
 ];
-const WATCHLIST = [
+const DEFAULT_WATCHLIST = [
   {t:"FLNC",n:"Fluence Energy Inc",c:"+12.30%"},
   {t:"STAA",n:"Staar Surgical Co",c:"-1.47%"},
   {t:"GKOS",n:"Glaukos Corp",c:"+1.45%"},
@@ -132,16 +165,45 @@ const WATCHLIST = [
   {t:"LUNR",n:"Intuitive Machines Inc",c:"+15.47%"},
   {t:"TLN",n:"Talen Energy Corp",c:""},
 ];
+
+function loadList(key, def) {
+  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : def; } catch { return def; }
+}
+function saveList(key, arr) {
+  try { localStorage.setItem(key, JSON.stringify(arr)); } catch {}
+}
+
+let PORTFOLIO = loadList("piq_portfolio", DEFAULT_PORTFOLIO);
+let WATCHLIST = loadList("piq_watchlist", DEFAULT_WATCHLIST);
+
 const MODES = [
   {id:"screener",icon:"🔍",short:"Screener",label:"Stock Screener",fields:[{k:"ticker",l:"Ticker (blank = full portfolio)",p:"e.g. SMH"}]},
   {id:"earnings",icon:"📊",short:"Earnings",label:"Earnings Quality",fields:[{k:"ticker",l:"Ticker",p:"e.g. NU"}]},
-  {id:"thesis",icon:"💡",short:"Thesis",label:"Thesis Builder",fields:[{k:"ticker",l:"Ticker",p:"e.g. BE"},{k:"sector",l:"Sector",p:"e.g. Clean Energy"},{k:"hypothesis",l:"Your hypothesis",p:"e.g. Bloom Energy benefits from AI power demand...",big:true}]},
-  {id:"riskreward",icon:"⚖️",short:"Risk/Reward",label:"Risk-Reward",fields:[{k:"ticker",l:"Ticker",p:"e.g. MRVL"},{k:"price",l:"Entry price ($)",p:"e.g. 280"}]},
-  {id:"blindspot",icon:"🧿",short:"Blind Spot",label:"Blind Spot Checker",fields:[{k:"ticker",l:"Ticker or leave blank",p:"e.g. ICLN"},{k:"analysis",l:"Your analysis (optional)",p:"Paste your thesis...",big:true}]},
-  {id:"rotation",icon:"🔄",short:"Rotation",label:"Sector Rotation",fields:[{k:"phase",l:"Market phase",p:"e.g. late bull, sideways"},{k:"rates",l:"Rate environment",p:"e.g. elevated, cuts expected"}]},
+  {id:"thesis",icon:"💡",short:"Thesis",label:"Thesis Builder",fields:[
+    {k:"ticker",l:"Ticker",p:"e.g. BE"},
+    {k:"sector",l:"Sector",p:"e.g. Clean Energy"},
+    {k:"hypothesis",l:"Your hypothesis",p:"e.g. Bloom Energy benefits from AI power demand...",big:true}
+  ]},
+  {id:"riskreward",icon:"⚖️",short:"Risk/Reward",label:"Risk-Reward",fields:[
+    {k:"ticker",l:"Ticker",p:"e.g. MRVL"},
+    {k:"price",l:"Entry price ($)",p:"e.g. 280"}
+  ]},
+  {id:"blindspot",icon:"🧿",short:"Blind Spot",label:"Blind Spot",fields:[
+    {k:"ticker",l:"Ticker or leave blank",p:"e.g. ICLN"},
+    {k:"analysis",l:"Your analysis (optional)",p:"Paste your thesis...",big:true}
+  ]},
+  {id:"rotation",icon:"🔄",short:"Rotation",label:"Sector Rotation",fields:[
+    {k:"phase",l:"Market phase",p:"e.g. late bull, sideways"},
+    {k:"rates",l:"Rate environment",p:"e.g. elevated, cuts expected"}
+  ]},
   {id:"conflict",icon:"🛡️",short:"Conflict",label:"Portfolio Conflict",fields:[]},
-  {id:"chartfund",icon:"📈",short:"Chart+Fund",label:"Chart + Fundamentals",fields:[{k:"ticker",l:"Ticker",p:"e.g. RKLB"},{k:"pattern",l:"Chart pattern",p:"e.g. breakout, cup & handle"}]},
+  {id:"chartfund",icon:"📈",short:"Chart+Fund",label:"Chart + Fundamentals",fields:[
+    {k:"ticker",l:"Ticker",p:"e.g. RKLB"},
+    {k:"pattern",l:"Chart pattern",p:"e.g. breakout, cup & handle"}
+  ]},
   {id:"journal",icon:"📓",short:"Journal",label:"Trade Journal",fields:[{k:"trades",l:"Paste recent trades (optional)",p:"Date | Ticker | Action | Price...",big:true}]},
+  {id:"radar",icon:"📡",short:"52W Radar",label:"52-Week Radar",fields:[]},
+  {id:"manager",icon:"⚙️",short:"Manage Lists",label:"Portfolio Manager",fields:[]},
 ];
 
 let mode = MODES[0], inputs = {};
@@ -149,56 +211,202 @@ let mode = MODES[0], inputs = {};
 function ps() { return PORTFOLIO.map(p=>`${p.t} (${p.n})`).join(", "); }
 function ws() { return WATCHLIST.map(w=>`${w.t} (${w.n})`).join(", "); }
 
-function prompt() {
+function buildPrompt() {
   const t = inputs.ticker||"", base = `Portfolio: ${ps()}. Watchlist: ${ws()}.`;
   const p = {
-    screener: `${base} Screen: ${t||"my full portfolio"}. Give fundamentals (PE, ROE, debt/equity, revenue growth), technicals (trend, RSI, MAs, volume), and verdict BUY/WATCH/AVOID per holding. Be direct.`,
-    earnings: `${base} Audit last 4 quarters of ${t||"BE and NU"}. Find revenue vs profit mismatch, cash flow gaps, margin red flags, anomalies. Rate severity Low/Medium/High each.`,
-    thesis: `${base} Stock: ${t||"strongest conviction in my portfolio"}. Sector: ${inputs.sector||"infer"}. Hypothesis: ${inputs.hypothesis||"outperforms peers 12 months"}. Validate or destroy using moat, institutional activity, chart. Flag contradictions hard.`,
-    riskreward: `${base} Entering ${t||"a position"} at $${inputs.price||"current price"}. Give: stop-loss, 3 price targets (short/medium/long), risk-reward ratio. Clear entry recommendation at end.`,
-    blindspot: `${base} Review my analysis of ${t||"my portfolio"}${inputs.analysis?`: "${inputs.analysis}"`:""}. Find logical errors, overconfident assumptions, ignored data, macro risks. Flag blind spots for a Peru-based USD investor. Be brutal.`,
-    rotation: `${base} Market phase: ${inputs.phase||"late bull/uncertain"}. Rates: ${inputs.rates||"elevated, cuts expected"}. Map each sector (defense, cybersecurity, semiconductors, clean energy, energy, fintech, international) as accumulation/distribution/markup. Verdict hold/trim/add. Flag 2 watchlist names to rotate into now.`,
-    conflict: `${base} Goal: growth with inflation hedge. Find: overlapping sector exposure, correlated positions, holdings contradicting my goal, safest rebalancing move. Cross-reference watchlist before adding anything.`,
-    chartfund: `${base} Stock: ${t||"most technically interesting in my portfolio"}. Pattern: ${inputs.pattern||"assess most likely"}. Cross-check recent results, institutional activity, news. Do fundamentals support the setup? Final trade verdict.`,
-    journal: `${base} ${inputs.trades?`My recent trades: ${inputs.trades}.`:"Assume I built current portfolio over 6 months."} Find: recurring mistakes, overtraded setups, early/late exits, actual vs perceived win rate. Give 3 rules for my trading plan. Specific to growth investor buying near 52-week lows.`,
+    screener:`${base} Screen: ${t||"my full portfolio"}. Fundamentals (PE, ROE, debt/equity, revenue growth), technicals (trend, RSI, MAs, volume), verdict BUY/WATCH/AVOID per holding. Be direct.`,
+    earnings:`${base} Audit last 4 quarters of ${t||"BE and NU"}. Revenue vs profit mismatch, cash flow gaps, margin red flags, anomalies. Severity Low/Medium/High each.`,
+    thesis:`${base} Stock: ${t||"strongest conviction in my portfolio"}. Sector: ${inputs.sector||"infer"}. Hypothesis: ${inputs.hypothesis||"outperforms peers 12 months"}. Validate or destroy. Flag contradictions hard.`,
+    riskreward:`${base} Entering ${t||"a position"} at $${inputs.price||"current price"}. Stop-loss, 3 price targets (short/medium/long), risk-reward ratio. Clear entry recommendation at end.`,
+    blindspot:`${base} Review my analysis of ${t||"my portfolio"}${inputs.analysis?`: "${inputs.analysis}"`:""}. Logical errors, overconfident assumptions, ignored data, macro risks. Flag blind spots for a Peru-based USD investor. Be brutal.`,
+    rotation:`${base} Market phase: ${inputs.phase||"late bull/uncertain"}. Rates: ${inputs.rates||"elevated, cuts expected"}. Map each sector as accumulation/distribution/markup. Verdict hold/trim/add. Flag 2 watchlist names to rotate into now.`,
+    conflict:`${base} Goal: growth with inflation hedge. Overlapping sector exposure, correlated positions, holdings contradicting my goal, safest rebalancing move. Cross-reference watchlist before adding anything.`,
+    chartfund:`${base} Stock: ${t||"most technically interesting in my portfolio"}. Pattern: ${inputs.pattern||"assess most likely"}. Cross-check recent results, institutional activity, news. Fundamentals support or contradict the setup? Final trade verdict.`,
+    journal:`${base} ${inputs.trades?`My recent trades: ${inputs.trades}.`:"Assume I built current portfolio over 6 months."} Recurring mistakes, overtraded setups, early/late exits, actual vs perceived win rate. 3 rules for my trading plan immediately.`,
   };
   return p[mode.id]||p.screener;
 }
 
 async function run() {
+  if (mode.id === "radar") { runRadar(); return; }
+  if (mode.id === "manager") return;
   const btn = document.getElementById("run-btn");
   btn.disabled = true;
-  document.getElementById("empty").style.display = "none";
-  document.getElementById("error-box").style.display = "none";
-  document.getElementById("result").style.display = "none";
-  const ld = document.getElementById("loading");
-  ld.style.display = "flex";
+  showPanel("loading");
   document.getElementById("load-txt").textContent = `Running ${mode.label}...`;
   try {
-    const res = await fetch("https://portfolioiq-fortuna.onrender.com/api/claude", {
+    const res = await fetch(`${RENDER}/api/claude`, {
       method:"POST",
-      headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+      headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         model:"claude-sonnet-4-6", max_tokens:1500,
         system:"You are a sharp, direct investment analyst. Use ## for section headers, - for bullets. Verdicts BUY/WATCH/AVOID/TRIM/HOLD on their own line in caps. Be concise and actionable.",
-        messages:[{role:"user",content:prompt()}]
+        messages:[{role:"user",content:buildPrompt()}]
       })
     });
     const data = await res.json();
     if(data.error) throw new Error(data.error.message);
     const txt = (data.content||[]).map(b=>b.text||"").join("\n").trim();
     if(!txt) throw new Error("Empty response");
-    ld.style.display = "none";
     document.getElementById("r-icon").textContent = mode.icon;
     document.getElementById("r-title").textContent = mode.label+" Report";
     document.getElementById("result-body").innerHTML = fmt(txt);
-    document.getElementById("result").style.display = "block";
+    showPanel("result");
   } catch(e) {
-    ld.style.display = "none";
-    const eb = document.getElementById("error-box");
-    eb.textContent = "⚠️ "+e.message;
-    eb.style.display = "block";
+    document.getElementById("error-out").innerHTML = `<div class="error-box">⚠️ ${e.message}</div>`;
+    showPanel("error");
   } finally { btn.disabled = false; }
+}
+
+// ── 52-Week Radar ──────────────────────────────────────────────────────────
+async function runRadar() {
+  showPanel("loading");
+  document.getElementById("load-txt").textContent = "Loading 52-week data...";
+  try {
+    const res = await fetch(`${RENDER}/api/valuation`);
+    const data = await res.json();
+    renderRadar(data);
+    showPanel("radar");
+  } catch(e) {
+    document.getElementById("error-out").innerHTML = `<div class="error-box">⚠️ ${e.message}</div>`;
+    showPanel("error");
+  }
+}
+
+function renderRadar(items) {
+  const pTickers = new Set(PORTFOLIO.map(p=>p.t));
+  const port = items.filter(i=>pTickers.has(i.ticker));
+  const watch = items.filter(i=>!pTickers.has(i.ticker));
+
+  function card(item) {
+    const pos = item.range_position;
+    const pct = item.pct_from_high;
+    const price = item.price;
+    const lo = item.low_52w;
+    const hi = item.high_52w;
+
+    let barColor = "#3b82f6";
+    let badge = '<span class="radar-badge badge-na">N/A</span>';
+    if (pos !== null && pos !== undefined) {
+      if (pos <= 30) { barColor = "#4ade80"; badge = '<span class="radar-badge badge-buy">Near Low 🟢</span>'; }
+      else if (pos <= 60) { barColor = "#fbbf24"; badge = '<span class="radar-badge badge-hold">Mid Range 🟡</span>'; }
+      else { barColor = "#f87171"; badge = '<span class="radar-badge badge-trim">Near High 🔴</span>'; }
+    }
+
+    const pctFromHi = pct !== null && pct !== undefined ? `${pct > 0 ? "+" : ""}${pct}% from high` : "";
+    const pctColor = pct !== null && pct < -15 ? "#4ade80" : pct !== null && pct > -5 ? "#f87171" : "#fbbf24";
+
+    return `
+      <div class="radar-card">
+        <div class="radar-card-top">
+          <div>
+            <div class="radar-ticker">${item.ticker}</div>
+            <div class="radar-name">${(item.name||"").slice(0,35)}</div>
+          </div>
+          <div>
+            <div class="radar-price">${price ? "$"+price : "—"}</div>
+            <div class="radar-pct" style="color:${pctColor}">${pctFromHi}</div>
+          </div>
+        </div>
+        <div class="range-bar-wrap">
+          <div class="range-bar-bg"></div>
+          <div class="range-bar-fill" style="width:${pos||0}%;background:${barColor}"></div>
+        </div>
+        <div class="range-labels">
+          <span>52W Low: ${lo ? "$"+lo : "—"}</span>
+          <span>${badge}</span>
+          <span>52W High: ${hi ? "$"+hi : "—"}</span>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById("radar-panel").innerHTML = `
+    <div style="margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">📡</span>
+      <span style="font-weight:700;font-size:14px">52-Week Range Radar</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">🟢 Near 52W Low = potential entry &nbsp;·&nbsp; 🔴 Near 52W High = stretched &nbsp;·&nbsp; Live data via yfinance</div>
+    <div class="radar-section">
+      <div class="radar-section-title">💼 Portfolio Positions</div>
+      ${port.length ? port.map(card).join("") : '<div style="color:var(--muted);font-size:13px">No data available</div>'}
+    </div>
+    <div class="radar-section">
+      <div class="radar-section-title">🔭 Watchlist</div>
+      ${watch.length ? watch.map(card).join("") : '<div style="color:var(--muted);font-size:13px">No data available</div>'}
+    </div>`;
+}
+
+// ── Portfolio Manager ──────────────────────────────────────────────────────
+function renderManager() {
+  function rows(arr, key, cls) {
+    return arr.map((item,i) => `
+      <div class="pm-row">
+        <span class="pm-ticker" style="color:${cls==='p'?'var(--blue)':'#a78bfa'}">${item.t}</span>
+        <span class="pm-name">${item.n}</span>
+        <button class="pm-del" onclick="removeItem('${key}',${i})">×</button>
+      </div>`).join("");
+  }
+
+  document.getElementById("pm-panel").innerHTML = `
+    <div style="margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">⚙️</span>
+      <span style="font-weight:700;font-size:14px">Portfolio Manager</span>
+    </div>
+    <div class="pm-section">
+      <div class="pm-section-title">💼 Portfolio</div>
+      <div id="pm-port-rows">${rows(PORTFOLIO,'portfolio','p')}</div>
+      <div class="pm-add-row">
+        <input type="text" id="add-port-ticker" placeholder="Ticker e.g. NVDA" style="width:90px;flex:none">
+        <input type="text" id="add-port-name" placeholder="Company name">
+        <button class="pm-add-btn" onclick="addItem('portfolio')">+ Add</button>
+      </div>
+    </div>
+    <div class="pm-section">
+      <div class="pm-section-title">🔭 Watchlist</div>
+      <div id="pm-watch-rows">${rows(WATCHLIST,'watchlist','w')}</div>
+      <div class="pm-add-row">
+        <input type="text" id="add-watch-ticker" placeholder="Ticker e.g. PLTR" style="width:90px;flex:none">
+        <input type="text" id="add-watch-name" placeholder="Company name">
+        <button class="pm-add-btn" onclick="addItem('watchlist')">+ Add</button>
+      </div>
+    </div>
+    <div style="background:#052e16;border-radius:8px;padding:10px 12px;font-size:12px;color:#4ade80;margin-top:8px">✅ Changes save automatically and persist between sessions.</div>`;
+}
+
+function removeItem(key, idx) {
+  if (key === 'portfolio') { PORTFOLIO.splice(idx,1); saveList("piq_portfolio", PORTFOLIO); }
+  else { WATCHLIST.splice(idx,1); saveList("piq_watchlist", WATCHLIST); }
+  renderManager();
+  renderLists();
+}
+
+function addItem(key) {
+  const tEl = document.getElementById(`add-${key==='portfolio'?'port':'watch'}-ticker`);
+  const nEl = document.getElementById(`add-${key==='portfolio'?'port':'watch'}-name`);
+  const t = tEl.value.trim().toUpperCase();
+  const n = nEl.value.trim() || t;
+  if (!t) return;
+  if (key === 'portfolio') { PORTFOLIO.push({t,n}); saveList("piq_portfolio", PORTFOLIO); }
+  else { WATCHLIST.push({t,n,c:""}); saveList("piq_watchlist", WATCHLIST); }
+  tEl.value = ""; nEl.value = "";
+  renderManager();
+  renderLists();
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function showPanel(which) {
+  ["empty","loading","error-out","result","radar-panel","pm-panel"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  const show = {
+    "empty":"flex", "loading":"flex", "error":"block",
+    "result":"block", "radar":"block", "pm":"block", "manager":"block"
+  }[which] || "block";
+  const map = {"error":"error-out","radar":"radar-panel","pm":"pm-panel","manager":"pm-panel"};
+  const id = map[which] || which;
+  const el = document.getElementById(id);
+  if (el) el.style.display = show;
 }
 
 function fmt(txt) {
@@ -223,66 +431,73 @@ function bold(s){return esc(s).replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
 function setField(k,v){inputs[k]=v;const el=document.getElementById("f_"+k);if(el)el.value=v;}
 
 function renderModes(){
-  const bar=document.getElementById("modes");bar.innerHTML="";
+  const bar=document.getElementById("modes"); bar.innerHTML="";
   MODES.forEach(m=>{
     const b=document.createElement("button");
     b.className="mode-btn"+(m.id===mode.id?" active":"");
     b.innerHTML=`${m.icon} ${m.short}`;
-    b.onclick=()=>{mode=m;inputs={};renderUI();showEmpty();};
+    b.onclick=()=>{
+      mode=m; inputs={};
+      renderModeUI();
+      if(m.id==="radar"){ showPanel("empty"); }
+      else if(m.id==="manager"){ renderManager(); showPanel("manager"); }
+      else { showPanel("empty"); }
+    };
     bar.appendChild(b);
   });
 }
 
-function renderUI(){
+function renderModeUI(){
   renderModes();
   document.getElementById("card-icon").textContent=mode.icon;
   document.getElementById("card-title").textContent=mode.label;
   document.getElementById("empty-icon").textContent=mode.icon;
-  document.getElementById("empty-title").textContent=mode.label;
-  const fc=document.getElementById("fields");fc.innerHTML="";
-  if(mode.fields.length===0){
-    fc.innerHTML='<div style="font-size:12px;color:#64748b;background:#111827;border-radius:8px;padding:10px 12px">Runs on your full portfolio automatically.</div>';
+
+  const btn = document.getElementById("run-btn");
+  if(mode.id==="manager"){ btn.style.display="none"; }
+  else { btn.style.display="block"; btn.textContent=`Run ${mode.short} →`; }
+
+  const fc=document.getElementById("fields"); fc.innerHTML="";
+  if(mode.fields.length===0 && mode.id!=="manager"){
+    let msg = mode.id==="radar"
+      ? "Tap Run to load live 52-week range data for all positions and watchlist."
+      : "Runs on your full portfolio automatically.";
+    fc.innerHTML=`<div style="font-size:12px;color:#64748b;background:#111827;border-radius:8px;padding:10px 12px">${msg}</div>`;
     return;
   }
   mode.fields.forEach(f=>{
     const w=document.createElement("div");
-    const l=document.createElement("label");l.textContent=f.l;w.appendChild(l);
+    const l=document.createElement("label"); l.textContent=f.l; w.appendChild(l);
     if(f.big){
-      const ta=document.createElement("textarea");ta.rows=3;ta.placeholder=f.p;ta.id="f_"+f.k;
-      ta.oninput=()=>{inputs[f.k]=ta.value;};w.appendChild(ta);
+      const ta=document.createElement("textarea"); ta.rows=3; ta.placeholder=f.p; ta.id="f_"+f.k;
+      ta.oninput=()=>{inputs[f.k]=ta.value;}; w.appendChild(ta);
     } else {
-      const inp=document.createElement("input");inp.type="text";inp.placeholder=f.p;inp.id="f_"+f.k;
-      inp.oninput=()=>{inputs[f.k]=inp.value;};w.appendChild(inp);
+      const inp=document.createElement("input"); inp.type="text"; inp.placeholder=f.p; inp.id="f_"+f.k;
+      inp.oninput=()=>{inputs[f.k]=inp.value;}; w.appendChild(inp);
     }
     fc.appendChild(w);
   });
 }
 
-function showEmpty(){
-  document.getElementById("empty").style.display="flex";
-  document.getElementById("loading").style.display="none";
-  document.getElementById("error-box").style.display="none";
-  document.getElementById("result").style.display="none";
-}
-
 function renderLists(){
-  const pl=document.getElementById("plist");
+  const pl=document.getElementById("plist"); pl.innerHTML="";
   PORTFOLIO.forEach(p=>{
-    const r=document.createElement("div");r.className="ticker-row";
+    const r=document.createElement("div"); r.className="ticker-row";
     r.innerHTML=`<span class="t-sym p">${p.t}</span><span class="t-name">${p.n}</span>`;
-    r.onclick=()=>setField("ticker",p.t);pl.appendChild(r);
+    r.onclick=()=>setField("ticker",p.t); pl.appendChild(r);
   });
-  const wl=document.getElementById("wlist");
+  const wl=document.getElementById("wlist"); wl.innerHTML="";
   WATCHLIST.forEach(w=>{
-    const r=document.createElement("div");r.className="ticker-row";
-    const cc=w.c.startsWith("+")?"pos":w.c.startsWith("-")?"neg":"";
-    r.innerHTML=`<span class="t-sym w">${w.t}</span><span class="t-name">${w.n}</span><span class="t-chg ${cc}">${w.c}</span>`;
-    r.onclick=()=>setField("ticker",w.t);wl.appendChild(r);
+    const r=document.createElement("div"); r.className="ticker-row";
+    const cc=w.c&&w.c.startsWith("+")?"pos":w.c&&w.c.startsWith("-")?"neg":"";
+    r.innerHTML=`<span class="t-sym w">${w.t}</span><span class="t-name">${w.n}</span><span class="t-chg ${cc}">${w.c||""}</span>`;
+    r.onclick=()=>setField("ticker",w.t); wl.appendChild(r);
   });
 }
 
-renderUI();
+renderModeUI();
 renderLists();
+showPanel("empty");
 </script>
 </body>
 </html>
